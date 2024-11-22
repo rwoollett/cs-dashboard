@@ -1,6 +1,5 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import MainPanel from './components/MainPanel';
 
 function App() {
   const [data, setData] = React.useState<string | null>(null);
@@ -12,13 +11,19 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+    <section className="section">
+      <div className="pt-0 container">
+        <header>
+          <h1 className="title">
+            Network Node Dashboard
+          </h1>
+
+        </header>
         <p>{!data ? "Loading..." : data}</p>
-        <p>booc</p>
-      </header>
-    </div>
+        <MainPanel />
+      </div>
+
+    </section >
   );
 }
 
