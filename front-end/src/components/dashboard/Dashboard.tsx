@@ -1,6 +1,6 @@
 import React from "react";
 import NetworkList from "./NetworkList";
-import AcquireToken from "./AcquireToken";
+import AcquireToken from "./RequestToken";
 
 /**
  * MainPanel is wrapper around the Dashboard items.

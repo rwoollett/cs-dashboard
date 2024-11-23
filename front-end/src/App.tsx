@@ -1,9 +1,11 @@
 import React from 'react';
 import MainPanel from './components/MainPanel';
+import { ApolloProvider } from '@apollo/client';
+import apolloClient from './client/apollo';
 
 function App() {
   const [data, setData] = React.useState<string | null>(null);
-
+  
   React.useEffect(() => {
     fetch("/api")
       .then((res) => res.json())
@@ -11,19 +13,22 @@ function App() {
   }, []);
 
   return (
-    <section className="section">
-      <div className="pt-0 container">
-        <header>
-          <h1 className="title">
-            Network Node Dashboard
-          </h1>
+    <ApolloProvider client={apolloClient}>
+      <section className="section">
+        <div className="pt-0 container">
+          <header>
+            <h1 className="title">
+              Network Node Dashboard
+            </h1>
 
-        </header>
-        <p>{!data ? "Loading..." : data}</p>
-        <MainPanel />
-      </div>
+          </header>
+          <p>{!data ? "Loading..." : data}</p>
+          <MainPanel />
+        </div>
 
-    </section >
+      </section >
+    </ApolloProvider>
+
   );
 }
 

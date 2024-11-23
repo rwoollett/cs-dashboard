@@ -1,0 +1,22 @@
+query GetClients($range: RangePort!) {
+  getClients(range: $range) {
+    id
+    ip
+    name
+    connected
+    requestParent {
+      id
+      clientIp
+    }
+  }
+}
+
+subscription RequestedCSToken {
+  requestCS {
+    id
+    parentIp
+    relayed
+    requestedAt
+    sourceIp
+  }
+}

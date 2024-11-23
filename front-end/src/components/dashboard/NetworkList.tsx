@@ -1,13 +1,17 @@
 import React from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSearch } from '@fortawesome/free-solid-svg-icons'
-import { faBook, faVectorSquare } from '@fortawesome/free-solid-svg-icons'
+import { useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
+import { GrSearch, GrBook, GrLink } from "react-icons/gr";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
  * 
  */
 const NetworkList: React.FC = () => {
+  const { data, loading } = useGetClientsQuery({
+    variables: { range: { from: 5010, to: 5040 } }
+  });
+
+  console.log(loading, data);
 
   return (
     <nav className="panel">
@@ -16,8 +20,7 @@ const NetworkList: React.FC = () => {
         <p className="control has-icons-left">
           <input className="input" type="text" placeholder="Search" />
           <span className="icon is-left">
-            <FontAwesomeIcon icon={faSearch} />
-            <i className="fas fa-search" aria-hidden="true"></i>
+            <GrSearch />
           </span>
         </p>
       </div>
@@ -27,25 +30,26 @@ const NetworkList: React.FC = () => {
       </p>
       <a href="/" className="panel-block is-active">
         <span className="panel-icon">
-          <FontAwesomeIcon icon={faBook} />
+          <i className="fas fa-home"></i>
+          <GrBook />
         </span>
         bulma
       </a>
       <a href="/" className="panel-block">
         <span className="panel-icon">
-          <FontAwesomeIcon icon={faVectorSquare} />
+          <GrLink />
         </span>
         marksheet
       </a>
       <a href="/" className="panel-block">
         <span className="panel-icon">
-          <FontAwesomeIcon icon={faVectorSquare} />
+          {/* <FaVectorSquare /> */}
         </span>
         bulma
       </a>
       <a href="/" className="panel-block">
         <span className="panel-icon">
-          <FontAwesomeIcon icon={faBook} />
+          {/* <FaVectorSquare /> */}
         </span>
         marksheet
       </a>
