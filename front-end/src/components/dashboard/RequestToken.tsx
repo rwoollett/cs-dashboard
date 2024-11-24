@@ -50,11 +50,11 @@ const AcquireToken: React.FC = () => {
   );
 
   return (
-    <nav className="panel">
+    <div className="panel">
       <p className="panel-heading">Request Token Activity</p>
 
       {requestList}
-    </nav>
+    </div>
   );
 
 };

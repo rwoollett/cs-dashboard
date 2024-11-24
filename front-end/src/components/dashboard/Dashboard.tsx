@@ -9,8 +9,9 @@ import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-csto
  */
 const Dashboard: React.FC = () => {
 
+  const range = { from: 5010, to: 5080};
   const { data, loading } = useGetClientsQuery({
-    variables: { range: { from: 5010, to: 5040 } }
+    variables: { range }
   });
 
   let networkContent = null;
@@ -18,7 +19,7 @@ const Dashboard: React.FC = () => {
     networkContent = (<div><p>Loading...</p></div>)
   } else if (data) {
     console.log('dashboard',data);
-    networkContent = (<NetworkList clientList={data.getClients as Client[]} />);
+    networkContent = (<NetworkList clientList={data.getClients as Client[]} range={range} />);
   } else {
     networkContent = (<div><p>No network clients found.</p></div>)
   }
