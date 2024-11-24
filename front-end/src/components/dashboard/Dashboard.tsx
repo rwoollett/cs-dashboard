@@ -1,6 +1,7 @@
 import React from "react";
 import NetworkList from "./NetworkList";
 import AcquireToken from "./RequestToken";
+import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -8,13 +9,27 @@ import AcquireToken from "./RequestToken";
  */
 const Dashboard: React.FC = () => {
 
+  const { data, loading } = useGetClientsQuery({
+    variables: { range: { from: 5010, to: 5040 } }
+  });
+
+  let networkContent = null;
+  if (loading) {
+    networkContent = (<div><p>Loading...</p></div>)
+  } else if (data) {
+    console.log('dashboard',data);
+    networkContent = (<NetworkList clientList={data.getClients as Client[]} />);
+  } else {
+    networkContent = (<div><p>No network clients found.</p></div>)
+  }
+
   return (
     <div className="columns">
       <div className="column is-two-fifths">
-        <NetworkList/>
+        {networkContent}
       </div>
       <div className="column">
-        <AcquireToken/>
+        <AcquireToken />
       </div>
     </div>
   );

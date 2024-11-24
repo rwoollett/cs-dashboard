@@ -26,7 +26,7 @@ const AcquireToken: React.FC = () => {
   }, [loading, onFeedError, data]);
 
   const requestList = requestedCS.map(requestCS => (
-    <a href={`${requestCS.id}`} className="panel-block">
+    <a key={`${requestCS.id}`} href={`${requestCS.id}`} className="panel-block">
       <span className="panel-icon">
         <GrUnlink />
       </span>
