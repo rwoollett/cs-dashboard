@@ -12,7 +12,7 @@ query GetClients($range: RangePort!) {
 }
 
 subscription RequestedCSToken {
-  requestCS {
+  requestCS_Created {
     id
     parentIp
     relayed

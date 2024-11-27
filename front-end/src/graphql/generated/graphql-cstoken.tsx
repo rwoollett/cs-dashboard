@@ -105,7 +105,7 @@ export type RequestParent = {
 
 export type Subscription = {
   __typename?: 'Subscription';
-  requestCS?: Maybe<RequestCs>;
+  requestCS_Created?: Maybe<RequestCs>;
 };
 
 export type GetClientsQueryVariables = Exact<{
@@ -115,10 +115,10 @@ export type GetClientsQueryVariables = Exact<{
 
 export type GetClientsQuery = { __typename?: 'Query', getClients: Array<{ __typename?: 'Client', id: number, ip: string, name: string, connected: boolean, requestParent: { __typename?: 'RequestParent', id: number, clientIp: string } } | null> };
 
-export type RequestCsTokenSubscriptionVariables = Exact<{ [key: string]: never; }>;
+export type RequestedCsTokenSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type RequestCsTokenSubscription = { __typename?: 'Subscription', requestCS?: { __typename?: 'RequestCS', id: number, parentIp: string, relayed: boolean, requestedAt: string, sourceIp: string } | null };
+export type RequestedCsTokenSubscription = { __typename?: 'Subscription', requestCS_Created?: { __typename?: 'RequestCS', id: number, parentIp: string, relayed: boolean, requestedAt: string, sourceIp: string } | null };
 
 
 export const GetClientsDocument = gql`
@@ -168,9 +168,9 @@ export type GetClientsQueryHookResult = ReturnType<typeof useGetClientsQuery>;
 export type GetClientsLazyQueryHookResult = ReturnType<typeof useGetClientsLazyQuery>;
 export type GetClientsSuspenseQueryHookResult = ReturnType<typeof useGetClientsSuspenseQuery>;
 export type GetClientsQueryResult = Apollo.QueryResult<GetClientsQuery, GetClientsQueryVariables>;
-export const RequestCsTokenDocument = gql`
-    subscription RequestCSToken {
-  requestCS {
+export const RequestedCsTokenDocument = gql`
+    subscription RequestedCSToken {
+  requestCS_Created {
     id
     parentIp
     relayed
@@ -181,23 +181,23 @@ export const RequestCsTokenDocument = gql`
     `;
 
 /**
- * __useRequestCsTokenSubscription__
+ * __useRequestedCsTokenSubscription__
  *
- * To run a query within a React component, call `useRequestCsTokenSubscription` and pass it any options that fit your needs.
- * When your component renders, `useRequestCsTokenSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useRequestedCsTokenSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useRequestedCsTokenSubscription` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useRequestCsTokenSubscription({
+ * const { data, loading, error } = useRequestedCsTokenSubscription({
  *   variables: {
  *   },
  * });
  */
-export function useRequestCsTokenSubscription(baseOptions?: Apollo.SubscriptionHookOptions<RequestCsTokenSubscription, RequestCsTokenSubscriptionVariables>) {
+export function useRequestedCsTokenSubscription(baseOptions?: Apollo.SubscriptionHookOptions<RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<RequestCsTokenSubscription, RequestCsTokenSubscriptionVariables>(RequestCsTokenDocument, options);
+        return Apollo.useSubscription<RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables>(RequestedCsTokenDocument, options);
       }
-export type RequestCsTokenSubscriptionHookResult = ReturnType<typeof useRequestCsTokenSubscription>;
-export type RequestCsTokenSubscriptionResult = Apollo.SubscriptionResult<RequestCsTokenSubscription>;
+export type RequestedCsTokenSubscriptionHookResult = ReturnType<typeof useRequestedCsTokenSubscription>;
+export type RequestedCsTokenSubscriptionResult = Apollo.SubscriptionResult<RequestedCsTokenSubscription>;

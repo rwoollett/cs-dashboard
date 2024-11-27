@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useRequestCsTokenSubscription, RequestCs } from "../../graphql/generated/graphql-cstoken";
+import { useRequestedCsTokenSubscription, RequestCs } from "../../graphql/generated/graphql-cstoken";
 import { GrUnlink } from "react-icons/gr";
 import { parseISO, format } from 'date-fns';
 
@@ -9,7 +9,7 @@ import { parseISO, format } from 'date-fns';
  * 
  */
 const AcquireToken: React.FC = () => {
-  const { loading, data, error: onFeedError } = useRequestCsTokenSubscription();
+  const { loading, data, error: onFeedError } = useRequestedCsTokenSubscription();
   const [requestedCS, setRequestCS] = useState<RequestCs[]>([]);
 
   useEffect(() => {
@@ -17,9 +17,9 @@ const AcquireToken: React.FC = () => {
     else if (onFeedError) {
       console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
     } else {
-      if (data && data.requestCS) {
-        const { sourceIp, requestedAt, relayed } = data.requestCS;
-        setRequestCS(state => ([data.requestCS as RequestCs, ...state.slice(0, 4)]));
+      if (data && data.requestCS_Created) {
+        const { sourceIp, requestedAt, relayed } = data.requestCS_Created;
+        setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0, 4)]));
         console.log(sourceIp, requestedAt, relayed);
       }
     }
