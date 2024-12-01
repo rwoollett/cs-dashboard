@@ -40,7 +40,7 @@ function createApolloClient() {
     link: split(
       ({ query }) => {
         const definition = getMainDefinition(query);
-        console.log('createApolloClient', definition, query);
+        
         return (
           definition.kind === 'OperationDefinition' &&
           definition.operation === 'subscription'

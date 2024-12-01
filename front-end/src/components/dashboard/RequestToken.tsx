@@ -18,15 +18,14 @@ const AcquireToken: React.FC = () => {
       console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
     } else {
       if (data && data.requestCS_Created) {
-        const { sourceIp, requestedAt, relayed } = data.requestCS_Created;
         setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0, 4)]));
-        console.log(sourceIp, requestedAt, relayed);
       }
     }
   }, [loading, onFeedError, data]);
 
   const requestList = requestedCS.map(requestCS => (
-    <a key={`${requestCS.id}`} href={`${requestCS.id}`} className="panel-block">
+    <a key={`${requestCS.sourceIp}_${requestCS.requestedAt}`}
+      href={`${requestCS.sourceIp}_${requestCS.requestedAt}`} className="panel-block">
       <span className="panel-icon">
         <GrUnlink />
       </span>
@@ -34,17 +33,17 @@ const AcquireToken: React.FC = () => {
         <div className="column is-3">
           {requestCS.sourceIp}
         </div>
-        <div className="column is-9">
+        <div className="column is-7">
           {`${format(parseISO(requestCS.requestedAt), 'P hh:mm:ss:SSS ')}`}
         </div>
-        {/* <div className="column is-1">
+        <div className="column is-2">
           <div className="fixed-grid has-2-cols">
             <div className="grid">
-              <div className="cell is-hidden-tablet"><label>Relayed</label></div>
-              <div className="cell">{requestCS.relayed}</div>
+              <div className="cell">{requestCS.parentIp}</div>
+              <div className="cell"><label>{requestCS.relayed.toString()}</label></div>
             </div>
           </div>
-        </div> */}
+        </div>
       </div>
     </a>)
   );

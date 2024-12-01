@@ -34,11 +34,11 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
     <div className="panel">
       <p className="panel-heading">Network Nodes</p>
       <div className="panel-block">
-        <p className="columns is-multiline my-0">
+        <div className="columns is-multiline my-0">
           <p className="is-size-7 my-0 p-0 column is-full">Range of IP for network group is:</p>
           <p className="is-size-7 my-0 p-0 column  is-one-third"><span className="has-text-weight-light">From: </span>{range.from}</p>
           <p className="is-size-7 my-0 p-0 column is-one-third"><span className="has-text-weight-light">To: </span>{range.to}</p>
-        </p>
+        </div>
       </div>
       <label className="panel-block">
         <p className="control has-icons-left">

@@ -18,7 +18,6 @@ const Dashboard: React.FC = () => {
   if (loading) {
     networkContent = (<div><p>Loading...</p></div>)
   } else if (data) {
-    console.log('dashboard',data);
     networkContent = (<NetworkList clientList={data.getClients as Client[]} range={range} />);
   } else {
     networkContent = (<div><p>No network clients found.</p></div>)

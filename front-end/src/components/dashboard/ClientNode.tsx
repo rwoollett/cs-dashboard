@@ -1,10 +1,25 @@
-import React from "react";
-import { Client } from "../../graphql/generated/graphql-cstoken";
+import React, { useEffect, useState } from "react";
+import { Client, useConnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
+import { parseISO, format } from 'date-fns';
 
 type ClientNodeProps = {
   client: Client;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
+  const { loading, data, error } = useConnectClientSubscription({
+    variables: { sourceIp: client.ip }
+  });
+  const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
+  const [connected, setConnected] = useState<boolean>(client.connected);
+  useEffect(() => {
+    if (data) {
+      if (data.clientCS_Connected) {
+        setConnectedAt(data.clientCS_Connected.connectedAt);
+        setConnected(true);
+      }
+    }
+  }, [loading, data, error])
+
   return (
     <div className="card">
       {/* <header className="card-header">
@@ -18,10 +33,11 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
         </div>
         <div className="content">
           <p className="is-size-6 my-0"><span className="has-text-weight-light">Node IP: </span>{client.ip}</p>
-          <p className="is-size-6 my-0"><span className="has-text-weight-light">Parent IP: </span>{client.requestParent.clientIp}</p>
-          <p className="is-size-6 my-0"><span className="has-text-weight-light">Status: </span>Not connected</p>
-          {/* <br /> */}
-          {/* <time datetime="2016-1-1">11:09 PM - 1 Jan 2016</time> */}
+          <br />
+          <p className="is-size-7 my-0"><span className="has-text-weight-light">Connected: </span>
+            <time>{connected && `${format(parseISO(connectedAt), 'P p')}`}</time>
+            {!connected && 'No'}
+          </p>
         </div>
       </div>
     </div>

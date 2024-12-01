@@ -4,6 +4,7 @@ query GetClients($range: RangePort!) {
     ip
     name
     connected
+    connectedAt
     requestParent {
       id
       clientIp
@@ -11,9 +12,15 @@ query GetClients($range: RangePort!) {
   }
 }
 
+subscription ConnectClient ($sourceIp: String!) {
+  clientCS_Connected(sourceIp: $sourceIp) {
+    connectedAt
+    sourceIp
+  }
+}
+
 subscription RequestedCSToken {
   requestCS_Created {
-    id
     parentIp
     relayed
     requestedAt

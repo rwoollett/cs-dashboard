@@ -6,4 +6,4 @@ Using a containerised web site on the main server for other apis in system.
 
 docker build -t cs-dashboard:v1.0 -f Dockerfile.prod .
 
-docker run -p8080:80 cs-dashboard:v1.0 
+docker run -p3000:80 cs-dashboard:v1.0 

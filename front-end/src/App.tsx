@@ -18,7 +18,7 @@ function App() {
         <div className="pt-0 container">
           <header>
             <h1 className="title">
-              Network Node Dashboard
+              Network with NMToken Dashboard
             </h1>
 
           </header>
