@@ -5,6 +5,7 @@ query GetClients($range: RangePort!) {
     name
     connected
     connectedAt
+    disconnectedAt
     requestParent {
       id
       clientIp
@@ -15,6 +16,13 @@ query GetClients($range: RangePort!) {
 subscription ConnectClient ($sourceIp: String!) {
   clientCS_Connected(sourceIp: $sourceIp) {
     connectedAt
+    sourceIp
+  }
+}
+
+subscription DisconnectClient ($sourceIp: String!) {
+  clientCS_Disconnected(sourceIp: $sourceIp) {
+    disconnectedAt
     sourceIp
   }
 }

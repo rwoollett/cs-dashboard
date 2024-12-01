@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Client, useConnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
+import { Client, useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
 import { parseISO, format } from 'date-fns';
 
 type ClientNodeProps = {
@@ -9,8 +9,13 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
   const { loading, data, error } = useConnectClientSubscription({
     variables: { sourceIp: client.ip }
   });
-  const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
+  const { loading: dcLoading, data: dcData, error: dcError } = useDisconnectClientSubscription({
+    variables: { sourceIp: client.ip }
+  });
   const [connected, setConnected] = useState<boolean>(client.connected);
+  const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
+  const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt);
+
   useEffect(() => {
     if (data) {
       if (data.clientCS_Connected) {
@@ -19,6 +24,15 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
       }
     }
   }, [loading, data, error])
+
+  useEffect(() => {
+    if (dcData) {
+      if (dcData.clientCS_Disconnected) {
+        setDisconnectedAt(dcData.clientCS_Disconnected.disconnectedAt);
+        setConnected(false);
+      }
+    }
+  }, [dcLoading, dcData, dcError])
 
   return (
     <div className="card">

@@ -30,6 +30,7 @@ export type Client = {
   __typename?: 'Client';
   connected: Scalars['Boolean']['output'];
   connectedAt: Scalars['String']['output'];
+  disconnectedAt: Scalars['String']['output'];
   id: Scalars['Int']['output'];
   ip: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -44,12 +45,20 @@ export type ConnectedClient = {
   sourceIp: Scalars['String']['output'];
 };
 
+/** Disconnected client from an ip on network CS */
+export type DisconnectedClient = {
+  __typename?: 'DisconnectedClient';
+  disconnectedAt: Scalars['String']['output'];
+  sourceIp: Scalars['String']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   connectClientCS: ConnectedClient;
   createAcquireCS: AcquireCs;
   createClient: Client;
   createRequestCS: RequestCs;
+  disconnectClientCS: DisconnectedClient;
 };
 
 
@@ -74,6 +83,11 @@ export type MutationCreateClientArgs = {
 export type MutationCreateRequestCsArgs = {
   parentIp: Scalars['String']['input'];
   relayed: Scalars['Boolean']['input'];
+  sourceIp: Scalars['String']['input'];
+};
+
+
+export type MutationDisconnectClientCsArgs = {
   sourceIp: Scalars['String']['input'];
 };
 
@@ -113,6 +127,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   acquireCS_Created?: Maybe<AcquireCs>;
   clientCS_Connected?: Maybe<ConnectedClient>;
+  clientCS_Disconnected?: Maybe<DisconnectedClient>;
   requestCS_Created?: Maybe<RequestCs>;
 };
 
@@ -121,12 +136,17 @@ export type SubscriptionClientCs_ConnectedArgs = {
   sourceIp: Scalars['String']['input'];
 };
 
+
+export type SubscriptionClientCs_DisconnectedArgs = {
+  sourceIp: Scalars['String']['input'];
+};
+
 export type GetClientsQueryVariables = Exact<{
   range: RangePort;
 }>;
 
 
-export type GetClientsQuery = { __typename?: 'Query', getClients: Array<{ __typename?: 'Client', id: number, ip: string, name: string, connected: boolean, connectedAt: string, requestParent: { __typename?: 'RequestParent', id: number, clientIp: string } } | null> };
+export type GetClientsQuery = { __typename?: 'Query', getClients: Array<{ __typename?: 'Client', id: number, ip: string, name: string, connected: boolean, connectedAt: string, disconnectedAt: string, requestParent: { __typename?: 'RequestParent', id: number, clientIp: string } } | null> };
 
 export type ConnectClientSubscriptionVariables = Exact<{
   sourceIp: Scalars['String']['input'];
@@ -134,6 +154,13 @@ export type ConnectClientSubscriptionVariables = Exact<{
 
 
 export type ConnectClientSubscription = { __typename?: 'Subscription', clientCS_Connected?: { __typename?: 'ConnectedClient', connectedAt: string, sourceIp: string } | null };
+
+export type DisconnectClientSubscriptionVariables = Exact<{
+  sourceIp: Scalars['String']['input'];
+}>;
+
+
+export type DisconnectClientSubscription = { __typename?: 'Subscription', clientCS_Disconnected?: { __typename?: 'DisconnectedClient', disconnectedAt: string, sourceIp: string } | null };
 
 export type RequestedCsTokenSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -149,6 +176,7 @@ export const GetClientsDocument = gql`
     name
     connected
     connectedAt
+    disconnectedAt
     requestParent {
       id
       clientIp
@@ -220,6 +248,37 @@ export function useConnectClientSubscription(baseOptions: Apollo.SubscriptionHoo
       }
 export type ConnectClientSubscriptionHookResult = ReturnType<typeof useConnectClientSubscription>;
 export type ConnectClientSubscriptionResult = Apollo.SubscriptionResult<ConnectClientSubscription>;
+export const DisconnectClientDocument = gql`
+    subscription DisconnectClient($sourceIp: String!) {
+  clientCS_Disconnected(sourceIp: $sourceIp) {
+    disconnectedAt
+    sourceIp
+  }
+}
+    `;
+
+/**
+ * __useDisconnectClientSubscription__
+ *
+ * To run a query within a React component, call `useDisconnectClientSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useDisconnectClientSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDisconnectClientSubscription({
+ *   variables: {
+ *      sourceIp: // value for 'sourceIp'
+ *   },
+ * });
+ */
+export function useDisconnectClientSubscription(baseOptions: Apollo.SubscriptionHookOptions<DisconnectClientSubscription, DisconnectClientSubscriptionVariables> & ({ variables: DisconnectClientSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<DisconnectClientSubscription, DisconnectClientSubscriptionVariables>(DisconnectClientDocument, options);
+      }
+export type DisconnectClientSubscriptionHookResult = ReturnType<typeof useDisconnectClientSubscription>;
+export type DisconnectClientSubscriptionResult = Apollo.SubscriptionResult<DisconnectClientSubscription>;
 export const RequestedCsTokenDocument = gql`
     subscription RequestedCSToken {
   requestCS_Created {
