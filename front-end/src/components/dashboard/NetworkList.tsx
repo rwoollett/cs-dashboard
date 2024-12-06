@@ -72,23 +72,21 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
       </div>
       <div className="panel-block">
         <div>
-          <p className="is-size-6 my-0">
-            {errors}
-            <div className="fixed-grid has-2-cols">
-              <div className="grid buttons are-small">
-                <div className="cell">
-                  <button onClick={() => doPostStartRequest()} className="button  is-info is-light">
-                    Start Group
-                  </button>
-                </div>
-                <div className="cell">
-                  <button onClick={() => doPostStopRequest()} className="button  is-info is-light">
-                    Stop Group
-                  </button>
-                </div>
+          {errors}
+          <div className="fixed-grid has-2-cols">
+            <div className="grid buttons are-small">
+              <div className="cell">
+                <button onClick={() => doPostStartRequest()} className="button  is-info is-light">
+                  Start Group
+                </button>
+              </div>
+              <div className="cell">
+                <button onClick={() => doPostStopRequest()} className="button  is-info is-light">
+                  Stop Group
+                </button>
               </div>
             </div>
-          </p>
+          </div>
         </div>
       </div>
       <label className="panel-block">

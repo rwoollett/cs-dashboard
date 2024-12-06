@@ -7,6 +7,7 @@
     "start": "NODE_ENV=production node server/dist/index.js",
     "prebuild": "cd front-end && npm install && npm run build",
     "dev": "concurrently \"nodemon server/src/index.ts\" \"cd front-end && npm run start\"",
+    "dev2": "concurrently \"nodemon server/src/index.ts\" \"cd cs-dashboard && npm run start\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
