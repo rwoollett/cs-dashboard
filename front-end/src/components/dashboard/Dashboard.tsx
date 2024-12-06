@@ -11,7 +11,7 @@ const Dashboard: React.FC = () => {
 
   const range = { from: 5010, to: 5080};
   const { data, loading } = useGetClientsQuery({
-    variables: { range }
+    variables: { range },
   });
 
   let networkContent = null;

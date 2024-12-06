@@ -54,7 +54,7 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
           </p>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
