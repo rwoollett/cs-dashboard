@@ -3,6 +3,7 @@ import NetworkList from "./NetworkList";
 import RequestToken from "./RequestToken";
 import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
 import AcquireToken from "./AcquireToken";
+import ClientToken from "./ClientToken";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -10,7 +11,7 @@ import AcquireToken from "./AcquireToken";
  */
 const Dashboard: React.FC = () => {
 
-  const range = { from: 5010, to: 5080};
+  const range = { from: 5010, to: 5080 };
   const { data, loading } = useGetClientsQuery({
     variables: { range },
   });
@@ -25,15 +26,27 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="columns">
-      <div className="column is-narrow">
+    <div className="columns is-multiline">
+      <div className="column is-full">
         {networkContent}
       </div>
-      <div className="column is-one-third">
-        <RequestToken />
+      <div className="column is-full">
+        <ClientToken />
       </div>
-      <div className="column is-one-third">
-        <AcquireToken />
+      <div className="column">
+        <div className="fixed-grid has-3-cols has-1-cols-mobile">
+          <div className="grid is-gap-2">
+            {/* <div className="cell is-row-start-1 is-col-span-6">
+              <ClientToken />
+            </div> */}
+            <div className="cell">
+              <RequestToken />
+            </div>
+            <div className="cell">
+              <AcquireToken />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

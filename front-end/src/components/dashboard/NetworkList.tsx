@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Client } from "../../graphql/generated/graphql-cstoken";
-import { GrSearch, GrBook } from "react-icons/gr";
+import { GrSearch } from "react-icons/gr";
 import ClientNode from "./ClientNode";
 import axios from 'axios';
 
@@ -21,11 +21,10 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
 
   const clientsList = clientList.map((client) => {
     return (
-      <div key={`${client.id}`} className="panel-block">
-        <span className="panel-icon">
-          <GrBook />
-        </span>
-        <ClientNode client={client} />
+      <div key={`${client.id}`} className="cell">
+        <div  className="panel-block">
+          <ClientNode client={client} />
+        </div>
       </div>
     );
   });
@@ -97,8 +96,10 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
           </span>
         </p>
       </label>
+      <div className="grid is-gap-0 is-col-min-6">
+        {clientsList}
+      </div>
 
-      {clientsList}
     </div>
   );
 

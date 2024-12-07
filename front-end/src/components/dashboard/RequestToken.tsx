@@ -25,35 +25,31 @@ const RequestToken: React.FC = () => {
   const requestList = requestedCS.map(requestCS => {
 
     const relayedInfo = requestCS.relayed && (<>
-      <div className="column is-4">
+      <div className="cell">
         <label className="has-background-warning-light px-1">Originator<br /></label>
         {requestCS.originalIp}
       </div>
     </>);
 
     const ifHasRelay = requestCS.relayed ? "has-text-warning" : "";
-    const sourceName = requestCS.relayed ? "Client" : "Client";
 
     return (
-      <div key={`${requestCS.sourceIp}_${requestCS.requestedAt}`}
-        className="panel-block">
-        <div className={`columns is-multiline`}>
-          <div className="column is-4 mx-1">
-            <label className={`has-background-info-light px-1`}>{sourceName}&nbsp;IP<br /></label>
-            <span className={`${ifHasRelay}`}>{requestCS.sourceIp}</span>
-          </div>
-          <div className="column is-7">
-            <label className="has-background-info-light px-1">Time stamp<br /></label>
-            {`${format(parseISO(requestCS.requestedAt), 'P hh:mm:ss:SSS ')}`}
-          </div>
-          <div className={`column is-12`}>
-            <div className="columns">
-              <div className="column is-4 mx-1">
-                <label className="has-background-info-light px-1">Parent<br /></label>
-                {requestCS.parentIp}
-              </div>
-              {relayedInfo}
+      <div key={`${requestCS.sourceIp}_${requestCS.requestedAt}`} className="panel-block">
+        <div className="fixed-grid has-2-cols">
+          <div className="grid">
+            <div className="cell mr-6">
+              <label className="has-background-info-light px-1">Client&nbsp;IP<br /></label>
+              <span className={`${ifHasRelay}`}>{requestCS.sourceIp}</span>
             </div>
+            <div className="cell mr-6">
+              <label className="has-background-info-light px-1">Time stamp<br /></label>
+              {`${format(parseISO(requestCS.requestedAt), 'P hh:mm:ss:SSS ')}`}
+            </div>
+            <div className="cell mr-6 is-row-start-2">
+              <label className="has-background-info-light px-1">Parent<br /></label>
+              {requestCS.parentIp}
+            </div>
+            {relayedInfo}
           </div>
         </div>
       </div>);
