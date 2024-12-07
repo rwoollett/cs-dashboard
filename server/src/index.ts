@@ -16,30 +16,24 @@ app.get("/api", (req, res) => {
   res.json({ message: "Hello 21 from server!" });
 });
 
-app.post("/api/client/start", (req, res) => {
-  const ls = spawn('./nm_go.sh', [], {
+const spawnAction = (method: string) => {
+  const ls = spawn(method, [], {
     detached: true,
     stdio: 'ignore',
     cwd: '../../netprocessor'
   });
   ls.unref();
-  ls.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
-  res.json({ Success: true });
+  return { success: true };
+};
+
+app.post("/api/client/start", (req, res) => {
+  const result = spawnAction('./nm_go.sh');
+  res.json(result);
 });
 
 app.post("/api/client/stop", (req, res) => {
-  const ls = spawn('./nm_stop.sh', [], {
-    detached: true,
-    stdio: 'ignore',
-    cwd: '../../netprocessor'
-  });
-  ls.unref();
-  ls.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
-  res.json({ Success: true });
+  const result = spawnAction('./nm_stop.sh');
+  res.json(result);
 });
 
 // All other GET requests not handled before will return our React app

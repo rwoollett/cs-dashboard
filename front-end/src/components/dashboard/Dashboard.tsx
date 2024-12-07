@@ -1,7 +1,8 @@
 import React from "react";
 import NetworkList from "./NetworkList";
-import AcquireToken from "./RequestToken";
+import RequestToken from "./RequestToken";
 import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
+import AcquireToken from "./AcquireToken";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -25,10 +26,13 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="columns">
-      <div className="column is-two-fifths">
+      <div className="column is-narrow">
         {networkContent}
       </div>
-      <div className="column">
+      <div className="column is-one-third">
+        <RequestToken />
+      </div>
+      <div className="column is-one-third">
         <AcquireToken />
       </div>
     </div>

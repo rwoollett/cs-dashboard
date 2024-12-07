@@ -34,6 +34,7 @@ export type Client = {
   id: Scalars['Int']['output'];
   ip: Scalars['String']['output'];
   name: Scalars['String']['output'];
+  processId?: Maybe<Scalars['String']['output']>;
   /** The client ip associated request parent record(always the same two record using ip) */
   requestParent: RequestParent;
 };
@@ -42,6 +43,7 @@ export type Client = {
 export type ConnectedClient = {
   __typename?: 'ConnectedClient';
   connectedAt: Scalars['String']['output'];
+  processId: Scalars['String']['output'];
   sourceIp: Scalars['String']['output'];
 };
 
@@ -63,6 +65,7 @@ export type Mutation = {
 
 
 export type MutationConnectClientCsArgs = {
+  processId: Scalars['String']['input'];
   sourceIp: Scalars['String']['input'];
 };
 
@@ -81,6 +84,7 @@ export type MutationCreateClientArgs = {
 
 
 export type MutationCreateRequestCsArgs = {
+  originalIp: Scalars['String']['input'];
   parentIp: Scalars['String']['input'];
   relayed: Scalars['Boolean']['input'];
   sourceIp: Scalars['String']['input'];
@@ -107,9 +111,16 @@ export type RangePort = {
   to: Scalars['Int']['input'];
 };
 
-/** A request for CS from a client source ip to its currently known parent ip in the distributed tree */
+/**
+ * A request for CS from a client source ip to its currently known parent ip in the distributed tree
+ * If relayed Request, it is because a parentIP was not the root, or is unreachable.
+ * The originalIp is the real client wanting to enter CS and acquire token.
+ * And when relayed, the sourceIp was the parent ip of the previous relayed sourceIp.
+ *
+ */
 export type RequestCs = {
   __typename?: 'RequestCS';
+  originalIp: Scalars['String']['output'];
   parentIp: Scalars['String']['output'];
   relayed: Scalars['Boolean']['output'];
   requestedAt: Scalars['String']['output'];
@@ -165,7 +176,12 @@ export type DisconnectClientSubscription = { __typename?: 'Subscription', client
 export type RequestedCsTokenSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type RequestedCsTokenSubscription = { __typename?: 'Subscription', requestCS_Created?: { __typename?: 'RequestCS', parentIp: string, relayed: boolean, requestedAt: string, sourceIp: string } | null };
+export type RequestedCsTokenSubscription = { __typename?: 'Subscription', requestCS_Created?: { __typename?: 'RequestCS', sourceIp: string, originalIp: string, parentIp: string, relayed: boolean, requestedAt: string } | null };
+
+export type AcquiredCsTokenSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AcquiredCsTokenSubscription = { __typename?: 'Subscription', acquireCS_Created?: { __typename?: 'AcquireCS', ip: string, sourceIp: string, acquiredAt: string } | null };
 
 
 export const GetClientsDocument = gql`
@@ -282,10 +298,11 @@ export type DisconnectClientSubscriptionResult = Apollo.SubscriptionResult<Disco
 export const RequestedCsTokenDocument = gql`
     subscription RequestedCSToken {
   requestCS_Created {
+    sourceIp
+    originalIp
     parentIp
     relayed
     requestedAt
-    sourceIp
   }
 }
     `;
@@ -311,3 +328,34 @@ export function useRequestedCsTokenSubscription(baseOptions?: Apollo.Subscriptio
       }
 export type RequestedCsTokenSubscriptionHookResult = ReturnType<typeof useRequestedCsTokenSubscription>;
 export type RequestedCsTokenSubscriptionResult = Apollo.SubscriptionResult<RequestedCsTokenSubscription>;
+export const AcquiredCsTokenDocument = gql`
+    subscription AcquiredCSToken {
+  acquireCS_Created {
+    ip
+    sourceIp
+    acquiredAt
+  }
+}
+    `;
+
+/**
+ * __useAcquiredCsTokenSubscription__
+ *
+ * To run a query within a React component, call `useAcquiredCsTokenSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useAcquiredCsTokenSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAcquiredCsTokenSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAcquiredCsTokenSubscription(baseOptions?: Apollo.SubscriptionHookOptions<AcquiredCsTokenSubscription, AcquiredCsTokenSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<AcquiredCsTokenSubscription, AcquiredCsTokenSubscriptionVariables>(AcquiredCsTokenDocument, options);
+      }
+export type AcquiredCsTokenSubscriptionHookResult = ReturnType<typeof useAcquiredCsTokenSubscription>;
+export type AcquiredCsTokenSubscriptionResult = Apollo.SubscriptionResult<AcquiredCsTokenSubscription>;

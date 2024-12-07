@@ -29,9 +29,18 @@ subscription DisconnectClient ($sourceIp: String!) {
 
 subscription RequestedCSToken {
   requestCS_Created {
+    sourceIp
+    originalIp
     parentIp
     relayed
     requestedAt
+  }
+}
+
+subscription AcquiredCSToken {
+  acquireCS_Created {
+    ip
     sourceIp
+    acquiredAt
   }
 }
