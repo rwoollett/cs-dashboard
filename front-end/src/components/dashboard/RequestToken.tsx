@@ -17,12 +17,12 @@ const RequestToken: React.FC = () => {
       console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
     } else {
       if (data && data.requestCS_Created) {
-        setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0, 4)]));
+        setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0,20)]));
       }
     }
   }, [loading, onFeedError, data]);
 
-  const requestList = requestedCS.map(requestCS => {
+  const requestList = requestedCS.map((requestCS, index) => {
 
     const relayedInfo = requestCS.relayed && (<>
       <div className="cell">
@@ -32,10 +32,12 @@ const RequestToken: React.FC = () => {
     </>);
 
     const ifHasRelay = requestCS.relayed ? "has-text-warning" : "";
+    console.log('requestedCS: ',index);
 
     return (
-      <div key={`${requestCS.sourceIp}_${requestCS.requestedAt}`} className="panel-block">
-        <div className="fixed-grid has-2-cols">
+      <div key={`${index}`} className="panel-block">
+      {/* <div key={`${requestCS.sourceIp}_${requestCS.requestedAt}`} className="panel-block"> */}
+      <div className="fixed-grid has-2-cols">
           <div className="grid">
             <div className="cell mr-6">
               <label className="has-background-info-light px-1">Client&nbsp;IP<br /></label>
