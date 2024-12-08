@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import _ from 'lodash';
+import _, { findLastIndex } from 'lodash';
 import { ActionByIp, TokenAction } from "../../types";
 import { format, parseISO } from "date-fns";
 import { Client, RequestCs, useRequestedCsTokenSubscription } from "../../graphql/generated/graphql-cstoken";
@@ -21,6 +21,28 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
   const { loading, data: requestActivity, error: onFeedError } = useRequestedCsTokenSubscription();
   const [clientActions, setClientActions] = useState<ActionByIp>(clientsByIp);
 
+  const flexActivity = {
+    display: "flex",
+    padding: "0px",
+    margin: "0px",
+    width: "fit-content",
+    "justify-content": "space-around",
+    "align-items": "flex-start",
+    "flex-direction": "row",
+  };
+
+  const activityItem = {
+    margin: "0 5px",
+    padding: "4px",
+    width: "110px",
+    color: "rgba(0, 0, 0, 0.75)",
+    background: "white",
+    "text-align": "left",
+    border: "1px solid rgb(51, 51, 51)",
+    "border-radius": "5px",
+    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.2)",
+  }
+
   useEffect(() => {
     if (loading) { }
     else if (onFeedError) {
@@ -37,15 +59,14 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
               ..._.cloneDeep(state),
               [requestActivity.requestCS_Created.sourceIp]: {
                 client: { ..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].client as Client) },
-                actions: [
-                  {
-                    parentIp: requestActivity.requestCS_Created.parentIp,
-                    timestamp: requestActivity.requestCS_Created.requestedAt,
-                    originalIp: requestActivity.requestCS_Created.originalIp,
-                    action: requestActivity.requestCS_Created as RequestCs
-                  } as TokenAction,
-                  ..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].actions.slice(0, 4))
-                ]
+                actions: [..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].actions),
+                {
+                  parentIp: requestActivity.requestCS_Created.parentIp,
+                  timestamp: requestActivity.requestCS_Created.requestedAt,
+                  originalIp: requestActivity.requestCS_Created.originalIp,
+                  action: requestActivity.requestCS_Created as RequestCs
+                } as TokenAction
+                ].slice(-5)
               }
             } as ActionByIp;
 
@@ -67,18 +88,17 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
 
     const activity = action.actions.map((activity, index) => {
       console.log(activity);
-      return (<div key={`${index}${ip}`} className="columns">
-        <div className="column">
-          <div className="mr-6">
-            <label className="has-background-info-light px-1">Time stamp<br /></label>
+      return (
+        <div key={`${index}${ip}`} style={activityItem}>
+          <div className="ml-2 is-size-7">
+            <label className="has-background-info-light px-1 ">Time stamp<br /></label>
             {`${format(parseISO(activity.timestamp), 'P hh:mm:ss:SSS ')}`}
           </div>
-          <div className="cell mr-6 is-row-start-2">
+          <div className="ml-2 mt-2 is-size-7">
             <label className="has-background-info-light px-1">Parent<br /></label>
             {activity.parentIp}
           </div>
         </div>
-      </div>
       )
     });
 
@@ -88,7 +108,9 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           {ip}
         </td>
         <td>
-          {activity}
+          <div style={flexActivity}>
+            {activity}
+          </div>
         </td>
       </tr>
     );

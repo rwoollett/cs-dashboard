@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
       <div className="column is-full">
         {clientContent}
       </div>
-      <div className="column">
+      {/* <div className="column">
         <div className="fixed-grid has-3-cols has-1-cols-mobile">
           <div className="grid is-gap-2">
             <div className="cell">
@@ -54,7 +54,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 
