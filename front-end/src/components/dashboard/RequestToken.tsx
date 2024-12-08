@@ -32,7 +32,7 @@ const RequestToken: React.FC = () => {
     </>);
 
     const ifHasRelay = requestCS.relayed ? "has-text-warning" : "";
-    console.log('requestedCS: ',index);
+    //console.log('requestedCS: ',index);
 
     return (
       <div key={`${index}`} className="panel-block">
