@@ -33,8 +33,8 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
   // const { loading, data: requestActivity, error: onFeedError } =
   //   useRequestedCsTokenSubscription();
   const REQUESTED_TOKEN: TypedDocumentNode<
-  RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables
-> = gql`
+    RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables
+  > = gql`
 subscription RequestedCSToken {
   requestCS_Created {
     sourceIp
@@ -47,10 +47,23 @@ subscription RequestedCSToken {
 `;
 
   const [clientActions, setClientActions] = useState<ActionByIp>(clientsByIp);
+  const [lastActivity, setLastActivity] = useState<TokenAction|undefined>(undefined);
+
   useSubscription(
     REQUESTED_TOKEN, {
     onData({ data }) {
-      console.log(JSON.stringify(data))
+
+      setLastActivity(() => {
+        if (data.data && data.data?.requestCS_Created && data.data.requestCS_Created.sourceIp) {
+          return {
+            parentIp: data.data.requestCS_Created.parentIp,
+            timestamp: data.data.requestCS_Created.requestedAt,
+            originalIp: data.data.requestCS_Created.originalIp,
+            action: data.data.requestCS_Created as RequestCs
+          } as TokenAction
+        } 
+      });
+
       setClientActions((state) => {
 
         if (data.data && data.data?.requestCS_Created && data.data.requestCS_Created.sourceIp) {
@@ -124,12 +137,16 @@ subscription RequestedCSToken {
 
 
   const clientsList = Object.entries(clientActions).map(([ip, action]) => {
-    console.log(ip);
-
     const activity = action.actions.map((activity, index) => {
-      console.log(activity);
+      let highlighted: string = "";
+      if (lastActivity && (lastActivity?.timestamp === activity.timestamp)) {
+        highlighted = styles.highlightedItem;
+      } else {
+        highlighted = styles.unhighlightedItem;
+      }
+
       return (
-        <div key={`${index}${ip}`} className={styles.activityItem}>
+        <div key={`${index}${ip}`} className={`${highlighted} ${styles.activityItem}`}>
           <div className="ml-2 is-size-7">
             <label className="has-background-info-light px-1 ">Time stamp<br /></label>
             {`${format(parseISO(activity.timestamp), 'P hh:mm:ss:SSS ')}`}

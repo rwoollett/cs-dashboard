@@ -17,7 +17,7 @@ const RequestToken: React.FC = () => {
       console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
     } else {
       if (data && data.requestCS_Created) {
-        setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0,20)]));
+        setRequestCS(state => ([data.requestCS_Created as RequestCs, ...state.slice(0,9)]));
       }
     }
   }, [loading, onFeedError, data]);
