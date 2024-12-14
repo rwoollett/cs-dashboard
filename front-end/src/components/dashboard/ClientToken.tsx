@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import _, { findLastIndex } from 'lodash';
 import { ActionByIp, TokenAction } from "../../types";
 import { format, parseISO } from "date-fns";
-import { Client, RequestCs, useRequestedCsTokenSubscription } from "../../graphql/generated/graphql-cstoken";
+import { Client, RequestCs, RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables, useRequestedCsTokenSubscription } from "../../graphql/generated/graphql-cstoken";
+import { gql, TypedDocumentNode, useSubscription } from "@apollo/client";
+import styles from './ClientToken.module.css'
 
 /**
  * Client Token activity on CSToken Network.
@@ -17,70 +19,108 @@ type ClientTokenProps = {
   clientsByIp: ActionByIp;
 }
 
+
+// const { data, error, loading } = useSubscription(
+//   query,
+//   {
+//     onData({ data }) {
+//       setAccumulatedData((prev) => [...prev, data])
+//     }
+//   }
+// );
+
 const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
-  const { loading, data: requestActivity, error: onFeedError } = useRequestedCsTokenSubscription();
-  const [clientActions, setClientActions] = useState<ActionByIp>(clientsByIp);
-
-  const flexActivity = {
-    display: "flex",
-    padding: "0px",
-    margin: "0px",
-    width: "fit-content",
-    "justify-content": "space-around",
-    "align-items": "flex-start",
-    "flex-direction": "row",
-  };
-
-  const activityItem = {
-    margin: "0 5px",
-    padding: "4px",
-    width: "110px",
-    color: "rgba(0, 0, 0, 0.75)",
-    background: "white",
-    "text-align": "left",
-    border: "1px solid rgb(51, 51, 51)",
-    "border-radius": "5px",
-    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.2)",
+  // const { loading, data: requestActivity, error: onFeedError } =
+  //   useRequestedCsTokenSubscription();
+  const REQUESTED_TOKEN: TypedDocumentNode<
+  RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables
+> = gql`
+subscription RequestedCSToken {
+  requestCS_Created {
+    sourceIp
+    originalIp
+    parentIp
+    relayed
+    requestedAt
   }
+}
+`;
 
-  useEffect(() => {
-    if (loading) { }
-    else if (onFeedError) {
-      console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
+  const [clientActions, setClientActions] = useState<ActionByIp>(clientsByIp);
+  useSubscription(
+    REQUESTED_TOKEN, {
+    onData({ data }) {
+      console.log(JSON.stringify(data))
+      setClientActions((state) => {
 
-    } else {
-      if (requestActivity && requestActivity.requestCS_Created) {
+        if (data.data && data.data?.requestCS_Created && data.data.requestCS_Created.sourceIp) {
 
-        setClientActions((state) => {
+          const newState = {
+            ..._.cloneDeep(state),
+            [data.data.requestCS_Created.sourceIp]: {
+              client: { ..._.cloneDeep(state[data.data.requestCS_Created.sourceIp].client as Client) },
+              actions: [..._.cloneDeep(state[data.data.requestCS_Created.sourceIp].actions),
+              {
+                parentIp: data.data.requestCS_Created.parentIp,
+                timestamp: data.data.requestCS_Created.requestedAt,
+                originalIp: data.data.requestCS_Created.originalIp,
+                action: data.data.requestCS_Created as RequestCs
+              } as TokenAction
+              ].slice(-5)
+            }
+          } as ActionByIp;
 
-          if (requestActivity && requestActivity.requestCS_Created && requestActivity.requestCS_Created.sourceIp) {
+          return newState;
 
-            const newState = {
-              ..._.cloneDeep(state),
-              [requestActivity.requestCS_Created.sourceIp]: {
-                client: { ..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].client as Client) },
-                actions: [..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].actions),
-                {
-                  parentIp: requestActivity.requestCS_Created.parentIp,
-                  timestamp: requestActivity.requestCS_Created.requestedAt,
-                  originalIp: requestActivity.requestCS_Created.originalIp,
-                  action: requestActivity.requestCS_Created as RequestCs
-                } as TokenAction
-                ].slice(-5)
-              }
-            } as ActionByIp;
+        } else {
 
-            return newState;
+          return { ...state };
+        }
 
-          } else {
-
-            return { ...state };
-          }
-
-        });
-      }
+      });
     }
-  }, [loading, onFeedError, requestActivity]);
+  });
+
+
+
+  // useEffect(() => {
+  //   if (loading) { }
+  //   else if (onFeedError) {
+  //     console.log(`OnFeedError: ${JSON.stringify(onFeedError)}`);
+
+  //   } else {
+  //     if (requestActivity && requestActivity.requestCS_Created) {
+
+  //       setClientActions((state) => {
+
+  //         if (requestActivity && requestActivity.requestCS_Created && requestActivity.requestCS_Created.sourceIp) {
+
+  //           const newState = {
+  //             ..._.cloneDeep(state),
+  //             [requestActivity.requestCS_Created.sourceIp]: {
+  //               client: { ..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].client as Client) },
+  //               actions: [..._.cloneDeep(state[requestActivity.requestCS_Created.sourceIp].actions),
+  //               {
+  //                 parentIp: requestActivity.requestCS_Created.parentIp,
+  //                 timestamp: requestActivity.requestCS_Created.requestedAt,
+  //                 originalIp: requestActivity.requestCS_Created.originalIp,
+  //                 action: requestActivity.requestCS_Created as RequestCs
+  //               } as TokenAction
+  //               ].slice(-5)
+  //             }
+  //           } as ActionByIp;
+
+  //           return newState;
+
+  //         } else {
+
+  //           return { ...state };
+  //         }
+
+  //       });
+  //     }
+  //   }
+  // }, [loading, onFeedError, requestActivity]);
 
 
   const clientsList = Object.entries(clientActions).map(([ip, action]) => {
@@ -89,7 +129,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
     const activity = action.actions.map((activity, index) => {
       console.log(activity);
       return (
-        <div key={`${index}${ip}`} style={activityItem}>
+        <div key={`${index}${ip}`} className={styles.activityItem}>
           <div className="ml-2 is-size-7">
             <label className="has-background-info-light px-1 ">Time stamp<br /></label>
             {`${format(parseISO(activity.timestamp), 'P hh:mm:ss:SSS ')}`}
@@ -108,7 +148,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           {ip}
         </td>
         <td>
-          <div style={flexActivity}>
+          <div className={styles.flexActivity}>
             {activity}
           </div>
         </td>

@@ -4,13 +4,13 @@ import { ApolloProvider } from '@apollo/client';
 import apolloClient from './client/apollo';
 
 function App() {
-  const [data, setData] = React.useState<string | null>(null);
+  // const [data, setData] = React.useState<string | null>(null);
   
-  React.useEffect(() => {
-    fetch("/api")
-      .then((res) => res.json())
-      .then((data) => setData(data.message));
-  }, []);
+  // React.useEffect(() => {
+  //   fetch("/api")
+  //     .then((res) => res.json())
+  //     .then((data) => setData(data.message));
+  // }, []);
 
   return (
     <ApolloProvider client={apolloClient}>
@@ -22,7 +22,7 @@ function App() {
             </h1>
 
           </header>
-          <p>{!data ? "Loading..." : data}</p>
+          {/* <p>{!data ? "Loading..." : data}</p> */}
           <MainPanel />
         </div>
 
