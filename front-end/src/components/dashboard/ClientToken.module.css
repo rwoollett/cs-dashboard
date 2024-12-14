@@ -25,9 +25,18 @@
   margin: 0 5px;
   width: 110px;
   color: rgba(0, 0, 0, 0.75);
-  background: white;
   text-align: left;
   border-radius: 5px;
+}
+
+.relayedItem {
+  background: yellow;
+}
+.requestedItem {
+  background: white;
+}
+.acquiredItem {
+  background: rgb(231, 232, 233);
 }
 
 @keyframes fadeIn {
