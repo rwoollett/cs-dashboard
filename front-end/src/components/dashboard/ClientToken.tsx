@@ -151,6 +151,8 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
 
       // Highlight last activity in the table of client token activity.
       let highlighted: string = "";
+      let activityLabel: string = "";
+      let activityDescription: string = "";
       if (lastActivity && (lastActivity?.timestamp === activity.timestamp)) {
         highlighted = styles.highlightedItem;
       } else {
@@ -162,35 +164,41 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
         case 'RequestCS':
           if (activity.action.sourceIp !== ip) {
             backgroundItem = styles.relayedItem;
+            activityLabel = 'Relayed'
+            activityDescription = `${activity.action.sourceIp} --> ${activity.action.parentIp}`
           } else {
             backgroundItem = styles.requestedItem;
+            activityLabel = 'Requested'
+            activityDescription = `${ip} --> ${activity.parentIp}`
           }
           break;
         default:
           backgroundItem = styles.acquiredItem;
+          activityLabel = 'Acquired'
+          activityDescription = `${activity.action.sourceIp} --> ${activity.originalIp}`
           break;
       }
 
       return (
-        <div key={`${index}${ip}`} className={`${backgroundItem} ${highlighted} ${styles.activityItem}`}>
-          <div className="ml-2 is-size-7">
-            <label className="has-background-info-light px-1 ">Time stamp<br /></label>
-            {`${format(parseISO(activity.timestamp), 'P hh:mm:ss:SSS ')}`}
+        <div key={`${index}${ip}`} className={`columns is-gapless mb-0 ${backgroundItem} ${highlighted} ${styles.activityItem}`}>
+          <div className="column is-narrow p-0" style={{ width: "min-content" }}>
+            <div className="is-size-7" >
+              <label className="has-background-info-light pl-0">Time stamp<br /></label>
+              {`${format(parseISO(activity.timestamp), 'P hh:mm:ss:SSS ')}`}
+            </div>
           </div>
-          <div className="ml-2 mt-2 is-size-7">
-            <label className="has-background-info-light px-1">Parent<br /></label>
-            {activity.parentIp}
-          </div>
-          <div className="ml-2 mt-2 is-size-7">
-            <label className="has-background-info-light px-1">Source IP<br /></label>
-            {activity.action.sourceIp}
+          <div className="column p-0" >
+            <div className="ml-1 is-size-7">
+              <label className="has-background-info-light pl-0">{activityLabel}<br /></label>
+              {activityDescription}
+            </div>
           </div>
         </div>
       )
     });
 
     return (
-      <tr key={`${action.client.id}`}>
+      <tr className="" key={`${action.client.id}`}>
         <td>
           {ip}
         </td>
@@ -207,7 +215,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
     <div className="panel">
       <p className="panel-heading">Client Token Activity</p>
       <div className="panel-block">
-        <table className="table">
+        <table className="table is-narrow is-striped is-bordered my-0">
           <thead>
             <tr>
               <th><p className="is-size-6 my-0"><span className="has-text-weight-light">Client IP</span></p></th>

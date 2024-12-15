@@ -2,6 +2,7 @@
 
 server/dist
 cs-dashboard
+scratch.txt
 
 # dependencies
 /node_modules
