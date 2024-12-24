@@ -20,7 +20,6 @@ function App() {
             <h1 className="title">
               Network with NMToken Dashboard 
             </h1>
-
           </header>
           {/* <p>{!data ? "Loading..." : data}</p> */}
           <MainPanel />
