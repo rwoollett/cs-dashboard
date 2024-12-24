@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 
 const createBoard = (rows: number, cols: number, initialValue: boolean): boolean[][] => {
   const board: boolean[][] = [];
@@ -12,6 +12,7 @@ const createBoard = (rows: number, cols: number, initialValue: boolean): boolean
   return board;
 };
 
+
 const CanvasComponent: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const BLOCK_SIZE = 10;
@@ -19,12 +20,13 @@ const CanvasComponent: React.FC = () => {
   const WIDTH = BLOCK_SIZE * NSIZE;
   const HEIGHT = WIDTH;
   const board: Boolean[][] = createBoard(NSIZE, NSIZE, true);
+  const duration = 200;
 
   const getRandomInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  const paint = (ctx: CanvasRenderingContext2D) => {
+  const paint = useCallback((ctx: CanvasRenderingContext2D) => {
     const size = BLOCK_SIZE;
     ctx.save();
     for (let i = 0; i < NSIZE; i++) {
@@ -39,23 +41,28 @@ const CanvasComponent: React.FC = () => {
           ctx.fillRect(x, y, size, size);
         }
       }
-      ctx.restore();
     }
-  };
+    ctx.restore();
+  }, [board]);
+
+  const draw = useCallback((ctx: CanvasRenderingContext2D) => {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    paint(ctx);
+  }, [WIDTH, HEIGHT, paint]);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
-      const context = canvas.getContext('2d');
-      if (context) {
-        context.fillStyle = '#FFFFFF';
-        context.fillRect(0, 0, WIDTH, HEIGHT);
-        context.beginPath();
-        paint(context);
-
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.beginPath();
+        setInterval(() => draw(ctx), duration);
       }
     }
-  }, []);
+  }, [HEIGHT, WIDTH, draw]);
 
   return (
     <div className="panel">
