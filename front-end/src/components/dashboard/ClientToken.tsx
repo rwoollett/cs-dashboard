@@ -87,7 +87,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
                 originalIp: data.data.requestCS_Created.originalIp,
                 action: data.data.requestCS_Created as RequestCs
               } as TokenAction
-              ].slice(-5)
+              ].slice(-10)
             }
           } as ActionByIp;
 
@@ -132,7 +132,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
                 originalIp: data.data.acquireCS_Created.ip,
                 action: data.data.acquireCS_Created as AcquireCs
               } as TokenAction
-              ].slice(-5)
+              ].slice(-10)
             }
           } as ActionByIp;
 
@@ -164,18 +164,18 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
         case 'RequestCS':
           if (activity.action.sourceIp !== ip) {
             backgroundItem = styles.relayedItem;
-            activityLabel = 'Relayed'
-            activityDescription = `${activity.action.sourceIp} --> ${activity.action.parentIp}`
+            activityLabel = 'Relay'
+            activityDescription = `${activity.action.sourceIp} --> P:${activity.action.parentIp}`
           } else {
             backgroundItem = styles.requestedItem;
-            activityLabel = 'Requested'
-            activityDescription = `${ip} --> ${activity.parentIp}`
+            activityLabel = 'Request'
+            activityDescription = `${ip} --> P:${activity.parentIp}`
           }
           break;
         default:
           backgroundItem = styles.acquiredItem;
-          activityLabel = 'Acquired'
-          activityDescription = `${activity.action.sourceIp} --> ${activity.originalIp}`
+          activityLabel = 'Acquire'
+          activityDescription = `${activity.originalIp} <-- P:${activity.parentIp}`
           break;
       }
 
@@ -214,7 +214,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
   return (
     <div className="panel">
       <p className="panel-heading">Client Token Activity</p>
-      <div className="panel-block">
+      <div className="panel-block table-container">
         <table className="table is-narrow is-striped is-bordered my-0">
           <thead>
             <tr>
