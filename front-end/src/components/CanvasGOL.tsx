@@ -99,7 +99,7 @@ const CanvasComponent: React.FC = () => {
 
   const paint = useCallback((ctx: CanvasRenderingContext2D) => {
     const size = BLOCK_SIZE;
-    const ALIVE_COLOR = 'rgb(0, 255, 0)'; // Green for alive cells
+    //const ALIVE_COLOR = 'rgb(0, 255, 0)'; // Green for alive cells
     const DEAD_COLOR = 'rgb(255, 255, 255)'; // White for dead cells
    // ctx.save();
     for (let i = 0; i < NSIZE; i++) {
@@ -118,7 +118,7 @@ const CanvasComponent: React.FC = () => {
       }
     }
     //ctx.restore();
-  }, [board]);
+  }, [board, ALIVE]);
 
   const draw = useCallback((ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
