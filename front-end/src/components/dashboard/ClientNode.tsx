@@ -6,10 +6,10 @@ type ClientNodeProps = {
   client: Client;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
-  const { loading, data, error } = useConnectClientSubscription({
+  const { data } = useConnectClientSubscription({
     variables: { sourceIp: client.ip }
   });
-  const { loading: dcLoading, data: dcData, error: dcError } = useDisconnectClientSubscription({
+  const { data: dcData } = useDisconnectClientSubscription({
     variables: { sourceIp: client.ip }
   });
   const [connected, setConnected] = useState<boolean>(client.connected);
@@ -17,28 +17,24 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
   const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt);
 
   useEffect(() => {
-    if (data) {
-      if (data.clientCS_Connected) {
-        setConnectedAt(data.clientCS_Connected.connectedAt);
-        setConnected(true);
-      }
+    if (data?.clientCS_Connected) {
+      setConnectedAt(data.clientCS_Connected.connectedAt);
+      setConnected(true);
     }
-  }, [loading, data, error])
+  }, [data])
 
   useEffect(() => {
-    if (dcData) {
-      if (dcData.clientCS_Disconnected) {
-        setDisconnectedAt(dcData.clientCS_Disconnected.disconnectedAt);
-        setConnected(false);
-      }
+    if (dcData?.clientCS_Disconnected) {
+      setDisconnectedAt(dcData.clientCS_Disconnected.disconnectedAt);
+      setConnected(false);
     }
-  }, [dcLoading, dcData, dcError])
+  }, [dcData])
 
   return (
     <div className="card">
-      {/* <header className="card-header">
+      <header className="card-header">
         <p className="card-header-title my-0 px-5">{client.name}</p>
-      </header> */}
+      </header>
       <div className="card-content">
         <div className="media my-1">
           <div className="media-content">
@@ -47,7 +43,7 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
         </div>
         <div className="content">
           <p className="is-size-7 my-1"><span className="has-text-weight-light">Node IP: </span>{client.ip}</p>
-          <p className="is-size-7 my-0"><span className="has-text-weight-light">{!connected && 'Disconnected:'}{connected && 'Connected:'}<br/></span>
+          <p className="is-size-7 my-0"><span className="has-text-weight-light">{!connected && 'Disconnected:'}{connected && 'Connected:'}<br /></span>
             <time>{connected && `${format(parseISO(connectedAt), 'P p')}`}{!connected && `${format(parseISO(disconnectedAt), 'P p')}`}</time>
           </p>
         </div>
