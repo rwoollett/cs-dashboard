@@ -29,15 +29,6 @@ const CanvasComponent: React.FC = () => {
         }
       `;
 
-  useSubscription(
-    BOARD_GENERATE, {
-    onData({ data }) {
-      if (data.data?.board_Generation) {
-        console.log('gol generate', data.data.board_Generation);
-      }
-    }
-  });
-
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const BLOCK_SIZE = 2;
@@ -67,7 +58,6 @@ const CanvasComponent: React.FC = () => {
 
   };
 
-  initBoard();
 
   // Update GOL board on set inteval callback
   const neighbourCount = useCallback((x: number, y: number): number => {
@@ -147,6 +137,16 @@ const CanvasComponent: React.FC = () => {
     paint(ctx);
   }, [WIDTH, HEIGHT, paint]);
 
+  // useSubscription(
+  //   BOARD_GENERATE, {
+  //   context: { service: 'gol' },
+  //   onData({ data }) {
+  //     if (data.data?.board_Generation) {
+  //       console.log('gol generate', data.data.board_Generation);
+  //     }
+  //   }
+  // });
+  initBoard();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -159,14 +159,15 @@ const CanvasComponent: React.FC = () => {
         setInterval(() => draw(ctx), duration);
         setInterval(() => updateBoard(), genDuration);
       }
+
     }
   }, [HEIGHT, WIDTH, draw, updateBoard]);
 
   return (
     <div className="panel">
       <p className="panel-heading mb-4">Game of Life</p>
-      <div className="columns is-centered">
-        <div className="column is-half">
+      <div className="columns">
+        <div className="column">
           <canvas onClick={initBoard}
             ref={canvasRef}
             width={WIDTH}
