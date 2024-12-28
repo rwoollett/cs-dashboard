@@ -17,6 +17,15 @@ const httpLinkCSToken = new HttpLink({
   credentials: 'same-origin', // Additional fetch() options like `credentials` or `headers`
 })
 
+const wsLinkGOL = new GraphQLWsLink(createClient({
+  url: `${process.env.REACT_APP_GOL_APOLLO_SERVER_WS}/graphql`,
+}));
+
+const httpLinkGOL = new HttpLink({
+  uri: `${process.env.REACT_APP_GOL_APOLLO_SERVER_URL}/graphql`, // Server URL (must be absolute)
+  credentials: 'same-origin', // Additional fetch() options like `credentials` or `headers`
+})
+
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
@@ -30,23 +39,36 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (networkError) console.log(`[Network error]: ${networkError}`)
 })
 
-function createHttpLink() {
-  const httpLink = httpLinkCSToken;
-  return from([errorLink, httpLink]);
-}
+// function createHttpLink() {
+//   const httpLink = httpLinkCSToken;
+//   return from([errorLink, httpLink]);
+// }
 
 function createApolloClient() {
   return new ApolloClient({
-    link: split(
-      ({ query }) => {
-        const definition = getMainDefinition(query);
-        return (
-          definition.kind === 'OperationDefinition' &&
-          definition.operation === 'subscription'
-        );
-      },
-      wsLinkCSToken,
-      createHttpLink(),
+    link: split(operation => operation.getContext().service === 'gol',
+      split(
+        ({ query }) => {
+          const definition = getMainDefinition(query);
+          return (
+            definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription'
+          );
+        },
+        wsLinkGOL,
+        from([errorLink, httpLinkGOL]),
+      ),
+      split(
+        ({ query }) => {
+          const definition = getMainDefinition(query);
+          return (
+            definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription'
+          );
+        },
+        wsLinkCSToken,
+        from([errorLink, httpLinkCSToken]),
+      )
     ),
     cache: new InMemoryCache(),
   })

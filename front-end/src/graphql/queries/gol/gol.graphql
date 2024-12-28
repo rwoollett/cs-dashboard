@@ -1,0 +1,10 @@
+
+
+subscription BoardGeneration {
+  board_Generation {
+    genId
+    rows
+    cols
+    board
+  }
+}

@@ -8,7 +8,11 @@ import { parseISO, format } from 'date-fns';
  * 
  */
 const AcquireToken: React.FC = () => {
-  const { loading, data, error: onFeedError } = useAcquiredCsTokenSubscription();
+  const { loading, data, error: onFeedError } = useAcquiredCsTokenSubscription(
+    {
+      context: { service: 'cstoken'}
+    }
+  );
   const [acquiredCS, setAcquiredCS] = useState<AcquireCs[]>([]);
 
   useEffect(() => {
