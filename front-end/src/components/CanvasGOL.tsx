@@ -1,4 +1,6 @@
+import { gql, TypedDocumentNode, useSubscription } from '@apollo/client';
 import React, { useRef, useEffect, useCallback } from 'react';
+import { BoardGenerationSubscription, BoardGenerationSubscriptionVariables } from '../graphql/generated/graphql-gol';
 
 const createBoard = (rows: number, cols: number, initialValue: boolean): boolean[][] => {
   const board: boolean[][] = [];
@@ -10,13 +12,33 @@ const createBoard = (rows: number, cols: number, initialValue: boolean): boolean
     }
     board.push(row);
   }
-
-
   return board;
 };
 
 
 const CanvasComponent: React.FC = () => {
+
+  const BOARD_GENERATE: TypedDocumentNode<BoardGenerationSubscription, BoardGenerationSubscriptionVariables> = gql`
+        subscription BoardGeneration {
+          board_Generation {
+            genId
+            rows
+            cols
+            board
+          }
+        }
+      `;
+
+  useSubscription(
+    BOARD_GENERATE, {
+    onData({ data }) {
+      if (data.data?.board_Generation) {
+        console.log('gol generate', data.data.board_Generation);
+      }
+    }
+  });
+
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const BLOCK_SIZE = 2;
   const NSIZE = 380; //30; // number of rows/columns
@@ -101,7 +123,7 @@ const CanvasComponent: React.FC = () => {
     const size = BLOCK_SIZE;
     //const ALIVE_COLOR = 'rgb(0, 255, 0)'; // Green for alive cells
     const DEAD_COLOR = 'rgb(255, 255, 255)'; // White for dead cells
-   // ctx.save();
+    // ctx.save();
     for (let i = 0; i < NSIZE; i++) {
       for (let j = 0; j < NSIZE; j++) {
         const x = i * size;

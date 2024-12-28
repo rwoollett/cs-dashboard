@@ -46,10 +46,9 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
           </div>
         </div>
         <div className="content">
-          <p className="is-size-7 my-0"><span className="has-text-weight-light">Node IP: </span>{client.ip}</p>
-          <p className="is-size-7 my-0"><span className="has-text-weight-light">Connected: </span>
-            <time>{connected && `${format(parseISO(connectedAt), 'P p')}`}</time>
-            {!connected && 'No'}
+          <p className="is-size-7 my-1"><span className="has-text-weight-light">Node IP: </span>{client.ip}</p>
+          <p className="is-size-7 my-0"><span className="has-text-weight-light">{!connected && 'Disconnected:'}{connected && 'Connected:'}<br/></span>
+            <time>{connected && `${format(parseISO(connectedAt), 'P p')}`}{!connected && `${format(parseISO(disconnectedAt), 'P p')}`}</time>
           </p>
         </div>
       </div>
