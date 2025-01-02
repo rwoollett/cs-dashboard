@@ -25,7 +25,7 @@ const CanvasComponent: React.FC = () => {
       `;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   useSubscription(
     BOARD_GENERATE, {
     context: { service: 'gol' },
@@ -44,7 +44,18 @@ const CanvasComponent: React.FC = () => {
     const paint = (ctx: CanvasRenderingContext2D) => {
       const size = blockSize;
       const ALIVE = 1;
-      //const ALIVE_COLOR = 'rgb(0, 255, 0)'; // Green for alive cells
+      const ALIVE_COLORS: string[] = [
+        'rgb(255, 255, 255)', // White for dead cells
+        'rgb(0, 255, 0)',     // 1 Black(Alive green  )
+        'rgb(255, 255, 0)',   // 2 Lemon
+        'rgb(255, 82, 4)',    // 3 Orange
+        'rgb(201, 208, 181)', // 4 Pear
+        'rgb(0, 255, 0)',     // 5 Lime
+        'rgb(167, 12, 28)',   // 6 Strawberry
+        'rgb(175, 195, 102)', // 7 Grape
+        'rgb(255, 136, 5)',   // 8 Manderine
+        'rgb(255, 5, 5)'      // 8 Apple
+      ];
       console.log('paint');
 
       ctx.fillStyle = '#FFFFFF';
@@ -55,11 +66,12 @@ const CanvasComponent: React.FC = () => {
         for (let j = 0; j < colSize; j++) {
           const y = i * size;
           const x = j * size;
-          if (genBoard[i][j] === ALIVE) {
-            const r = 0; //getRandomInt(0, 255);
-            const g = 255; //getRandomInt(0, 255);
-            const b = 0;//getRandomInt(0, 255);
-            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+          if (genBoard[i][j] >= ALIVE) {
+            // const r = 0; //getRandomInt(0, 255);
+            // const g = 255; //getRandomInt(0, 255);
+            // const b = 0;//getRandomInt(0, 255);
+            //ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillStyle = ALIVE_COLORS[genBoard[i][j]];
           } else {
             ctx.fillStyle = DEAD_COLOR;
           }
