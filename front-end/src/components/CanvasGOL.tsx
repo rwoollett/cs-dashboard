@@ -12,6 +12,7 @@ const CanvasComponent: React.FC = () => {
     const initArray: number[][] = Array.from({ length: 30 }, () => Array(40).fill(1));
     return initArray;
   });
+  const [genId, setGenId] = useState(0);
 
   const BOARD_GENERATE: TypedDocumentNode<BoardGenerationSubscription, BoardGenerationSubscriptionVariables> = gql`
         subscription BoardGeneration {
@@ -31,7 +32,8 @@ const CanvasComponent: React.FC = () => {
     context: { service: 'gol' },
     onData({ data }) {
       if (data.data?.board_Generation) {
-        console.log('posted gen board', data.data.board_Generation.board);
+        //console.log('posted gen board', data.data.board_Generation.board);
+        setGenId(data.data?.board_Generation.genId);
         setBlockSize(10);
         setColSize(data.data?.board_Generation.cols);
         setRowSize(data.data?.board_Generation.rows);
@@ -56,11 +58,11 @@ const CanvasComponent: React.FC = () => {
         'rgb(255, 136, 5)',   // 8 Manderine
         'rgb(255, 5, 5)'      // 8 Apple
       ];
-      console.log('paint');
+      //console.log('paint');
 
       ctx.fillStyle = '#FFFFFF';
       ctx.clearRect(0, 0, colSize * size, rowSize * size);
-      console.log('paint gen board', genBoard[0]);
+      //console.log('paint gen board', genBoard[0]);
       const DEAD_COLOR = 'rgb(255, 255, 255)'; // White for dead cells
       for (let i = 0; i < rowSize; i++) {
         for (let j = 0; j < colSize; j++) {
@@ -92,7 +94,7 @@ const CanvasComponent: React.FC = () => {
 
   return (
     <div className="panel">
-      <p className="panel-heading mb-4">Game of Life</p>
+      <p className="panel-heading mb-4">Game of Life {genId}</p>
       <div className="columns">
         <div className="column">
           <canvas
