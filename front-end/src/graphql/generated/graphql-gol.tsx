@@ -102,13 +102,18 @@ export type MutationSignoutTmRoleArgs = {
 export type Query = {
   __typename?: 'Query';
   countTaskResultByGenID?: Maybe<Scalars['Int']['output']>;
-  getNextTask?: Maybe<Task>;
+  getNextTask?: Maybe<Array<Maybe<Task>>>;
   getTaskResultByGenID?: Maybe<Array<Maybe<TaskResult>>>;
 };
 
 
 export type QueryCountTaskResultByGenIdArgs = {
   genId: Scalars['Int']['input'];
+};
+
+
+export type QueryGetNextTaskArgs = {
+  nodeId: Scalars['String']['input'];
 };
 
 

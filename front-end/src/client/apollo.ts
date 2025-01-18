@@ -22,10 +22,18 @@ const wsLinkGOL = new GraphQLWsLink(createClient({
 }));
 
 const httpLinkGOL = new HttpLink({
-  uri: `${process.env.REACT_APP_GOL_APOLLO_SERVER_URL}/graphql`, // Server URL (must be absolute)
+  uri: `${process.env.REACT_APP_GOL_APOLLO_SERVER_URL}/graphql`,
   credentials: 'same-origin', // Additional fetch() options like `credentials` or `headers`
 })
 
+const wsLinkTTT = new GraphQLWsLink(createClient({
+  url: `${process.env.REACT_APP_TTT_APOLLO_SERVER_WS}/graphql`,
+}));
+
+const httpLinkTTT = new HttpLink({
+  uri: `${process.env.REACT_APP_TTT_APOLLO_SERVER_URL}/graphql`, // Server URL (must be absolute)
+  credentials: 'same-origin',
+})
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | null = null;
 
@@ -58,17 +66,28 @@ function createApolloClient() {
         wsLinkGOL,
         from([errorLink, httpLinkGOL]),
       ),
-      split(
-        ({ query }) => {
-          const definition = getMainDefinition(query);
-          return (
-            definition.kind === 'OperationDefinition' &&
-            definition.operation === 'subscription'
-          );
-        },
-        wsLinkCSToken,
-        from([errorLink, httpLinkCSToken]),
-      )
+      split(operation => operation.getContext().service === 'ttt',
+        split(
+          ({ query }) => {
+            const definition = getMainDefinition(query);
+            return (
+              definition.kind === 'OperationDefinition' &&
+              definition.operation === 'subscription'
+            );
+          },
+          wsLinkTTT,
+          from([errorLink, httpLinkTTT]),),
+        split(
+          ({ query }) => {
+            const definition = getMainDefinition(query);
+            return (
+              definition.kind === 'OperationDefinition' &&
+              definition.operation === 'subscription'
+            );
+          },
+          wsLinkCSToken,
+          from([errorLink, httpLinkCSToken]),
+        ))
     ),
     cache: new InMemoryCache(),
   })

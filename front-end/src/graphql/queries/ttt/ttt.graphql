@@ -1,0 +1,10 @@
+
+mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
+  createGame(player: $player, opponentStart: $opponentStart) {
+    id
+    player
+    opponentStart
+    createdAt
+    allocated
+  }
+}

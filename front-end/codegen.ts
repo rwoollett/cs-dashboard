@@ -25,6 +25,15 @@ const config: CodegenConfig = {
         'typescript-react-apollo'
       ]
     },
+    'src/graphql/generated/graphql-ttt.tsx': {
+      schema: `${process.env.REACT_APP_TTT_APOLLO_SERVER_URL}/graphql`,
+      documents: "src/graphql/queries/ttt/**/*.graphql",
+      plugins: [
+        'typescript',
+        'typescript-operations',
+        'typescript-react-apollo'
+      ]
+    },
   },
 };
 export default config;

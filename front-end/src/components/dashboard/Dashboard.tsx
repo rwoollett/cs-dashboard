@@ -1,8 +1,6 @@
 import React from "react";
 import NetworkList from "./NetworkList";
-import RequestToken from "./RequestToken";
 import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
-import AcquireToken from "./AcquireToken";
 import ClientToken from "./ClientToken";
 import { ActionByIp } from "../../types";
 
@@ -23,7 +21,9 @@ const Dashboard: React.FC = () => {
     networkContent = (<div><p>Loading...</p></div>)
     clientContent = (<div><p>Loading...</p></div>)
   } else if (data) {
-    networkContent = (<NetworkList clientList={data.getClients as Client[]} range={range} />);
+    networkContent = (<NetworkList
+      clientList={data.getClients as Client[]}
+      range={range} />);
     clientContent = (<ClientToken
       range={range}
       clientsByIp={(data.getClients as Client[]).reduce((prev: ActionByIp, client) => {
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
       <div className="column is-full">
         {clientContent}
       </div>
-      <div className="column">
+      {/* <div className="column">
         <div className="fixed-grid has-3-cols has-1-cols-mobile">
           <div className="grid is-gap-2">
             <div className="cell">
@@ -54,7 +54,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 

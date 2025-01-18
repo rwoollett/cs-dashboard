@@ -7,7 +7,7 @@ import _ from 'lodash';
 const CanvasComponent: React.FC = () => {
   const [rowSize, setRowSize] = useState(30);
   const [colSize, setColSize] = useState(40);
-  const [blockSize, setBlockSize] = useState(10)
+  const [blockSize, setBlockSize] = useState(5)
   const [genBoard, setGenBoard] = useState<number[][]>(() => {
     const initArray: number[][] = Array.from({ length: 30 }, () => Array(40).fill(1));
     return initArray;
@@ -34,7 +34,7 @@ const CanvasComponent: React.FC = () => {
       if (data.data?.board_Generation) {
         //console.log('posted gen board', data.data.board_Generation.board);
         setGenId(data.data?.board_Generation.genId);
-        setBlockSize(10);
+        setBlockSize(4);
         setColSize(data.data?.board_Generation.cols);
         setRowSize(data.data?.board_Generation.rows);
         setGenBoard((prev) => _.cloneDeep(data.data!.board_Generation!.board));
