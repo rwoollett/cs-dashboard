@@ -61,7 +61,7 @@ function Dropdown(
   return (
     <div ref={divEl} {...rest} className="dropdown is-active" >
       <div className="dropdown-trigger">
-        <button className="button pt-1 pb-0">
+        <button type="button" className="button pt-1 pb-0">
           <div
             className={`columns`}
             onClick={() => setIsOpen((current) => !current)}

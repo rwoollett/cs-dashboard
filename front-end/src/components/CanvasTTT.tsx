@@ -7,39 +7,56 @@ const CanvasComponent: React.FC = () => {
   const rowSize = 3;
   const colSize = 3;
   const blockSize = 80;
-  const board: number[] = Array(9).fill(0);
+  const [board, setBoard] = useState<number[]>(() => {
+    return Array(9).fill(0);
+  });
   // const [genBoard, setGenBoard] = useState<number[]>(() => {
   //   const initArray: number[] = Array(3).fill(0);
   //   return initArray;
   // });
-  board[0] = 2;
-  board[4] = 1;
-  board[8] = 2;
   const playerCharactors = [
     { label: 'X (Cross)', value: '1' },
     { label: 'O (Nought)', value: '2' },
   ];
-  //const [gameId, setGameId] = useState(0);
-  const gameId = 0;
+  // GameID of -1 means no game in action - it shows the start game options
+  const [gameId, setGameId] = useState(-1);
+  //const gameId = 1;
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
   const [isOpponentStart, setIsOpponentStart] = useState(true);
   const [playerMove, setPlayerMove] = useState<number>(-1);
   const [playerHover, setPlayerHover] = useState<number>(-1);
+  const [playMessage, setPlayMessage] = useState<string>(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handlePlayerSelect = (newOption: Option) => {
-    console.log(newOption.label, ' ', newOption.value);
     setPlayer(newOption);
   };
 
   const handleOpponentStart = (event: ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
     setIsOpponentStart(!isOpponentStart);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Used to call useMuataion newGame...
+    if (gameId >= 0) {
+      setGameId(-1);
+      setBoard(() => {
+        const newBoard: number[] = Array(9).fill(0);
+        return newBoard;
+      });
+    } else {
+      setGameId(2);
+      setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
+      setBoard(() => {
+        let newBoard: number[] = Array(9).fill(0);
+        newBoard[0] = 2;
+        newBoard[4] = 1;
+        newBoard[8] = 1;
+        return newBoard;
+      });
+    
+    }
   };
 
   const boardTraverse = (rect: DOMRect, x: number, y: number, dispatch: React.Dispatch<React.SetStateAction<number>>) => {
@@ -191,32 +208,39 @@ const CanvasComponent: React.FC = () => {
     }
   }, [board, playerHover, playerMove, player]);
 
+  const gameOption = (title: string, buttonText: string, change: boolean) => (
+    <div className='panel'>
+      <p className="panel-heading mb-4 is-size-7">{title}</p>
+      <div className='panel-block'>
+        <form onSubmit={handleSubmit}>
+          <div className="field">
+            <label className="label">Play Charactor</label>
+            {change && (<Dropdown options={playerCharactors} value={player} onChange={handlePlayerSelect} />)}
+            {change || player.label}
+          </div>
+          <div className="field">
+            <div className="control">
+              {change && (<label className="checkbox is-size-6">Opponent starts <input checked={isOpponentStart} onChange={handleOpponentStart} type="checkbox" className='is-size-6' /></label>)}
+              {change || playMessage}
+              </div>
+          </div>
+          <div className="field is-grouped">
+            <div className="control">
+              <button type="submit" className="button is-link">{buttonText}</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <div className="panel">
       <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
       <div className="columns">
         <div className="column">
-          <div className='panel'>
-            <p className="panel-heading mb-4 is-size-7">Select Game Options</p>
-            <div className='panel-block'>
-              <form onSubmit={handleSubmit}>
-                <div className="field">
-                  <label className="label">Play Charactor</label>
-                  <Dropdown options={playerCharactors} value={player} onChange={handlePlayerSelect} />
-                </div>
-                <div className="field">
-                  <div className="control">
-                    <label className="checkbox is-size-6">Opponent starts <input checked={isOpponentStart} onChange={handleOpponentStart} type="checkbox" className='is-size-6' /></label>
-                  </div>
-                </div>
-                <div className="field is-grouped">
-                  <div className="control">
-                    <button className="button is-link">Start Game</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
+          {gameId < 0 && gameOption('Select Game Options', 'Start Game', true)}
+          {gameId >= 0 && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
         </div>
         <div className="column">
           <canvas className='is-clickable'
