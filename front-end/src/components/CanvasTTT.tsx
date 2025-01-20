@@ -1,25 +1,33 @@
-import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent } from 'react';
+import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
+import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
 //import { gql, TypedDocumentNode } from '@apollo/client';
 //import _ from 'lodash';
 
 const CanvasComponent: React.FC = () => {
-  const rowSize = 3;
-  const colSize = 3;
-  const blockSize = 80;
+
+  const boardBounds: BoardBounds = useMemo(() => {
+    return {
+      rowSize: 3,
+      colSize: 3,
+      blockSize: 80
+    }
+  }, []);
+
   const [board, setBoard] = useState<number[]>(() => {
     return Array(9).fill(0);
   });
-  // const [genBoard, setGenBoard] = useState<number[]>(() => {
-  //   const initArray: number[] = Array(3).fill(0);
-  //   return initArray;
-  // });
+
+  const win = useMemo(() => [0, 0, 1, 0, 1, 0, 1, 0, 0], []);
+
   const playerCharactors = [
     { label: 'X (Cross)', value: '1' },
     { label: 'O (Nought)', value: '2' },
   ];
+
   // GameID of -1 means no game in action - it shows the start game options
   const [gameId, setGameId] = useState(-1);
+
   //const gameId = 1;
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
   const [isOpponentStart, setIsOpponentStart] = useState(true);
@@ -55,21 +63,6 @@ const CanvasComponent: React.FC = () => {
         newBoard[8] = 1;
         return newBoard;
       });
-    
-    }
-  };
-
-  const boardTraverse = (rect: DOMRect, x: number, y: number, dispatch: React.Dispatch<React.SetStateAction<number>>) => {
-    for (let i = 0; i < rowSize; i++) {
-      for (let j = 0; j < colSize; j++) {
-        const cy = i * blockSize;
-        const cx = j * blockSize;
-        const k = (i * rowSize) + j;
-        if (x > cx && x < (cx + blockSize) &&
-          y > cy && y < (cy + blockSize)) {
-          dispatch(k);
-        }
-      }
     }
   };
 
@@ -77,18 +70,18 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    boardTraverse(rect, x, y, setPlayerHover);
-  };
-
-  const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
-    setPlayerHover(-1);
+    boardTraverse(x, y, boardBounds, setPlayerHover);
   };
 
   const handleOnMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    boardTraverse(rect, x, y, setPlayerMove);
+    boardTraverse(x, y, boardBounds, setPlayerMove);
+  };
+
+  const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
+    setPlayerHover(-1);
   };
 
   // const UPDATE_GAME: TypedDocumentNode<BoardGenerationSubscription, BoardGenerationSubscriptionVariables> = gql`
@@ -132,44 +125,12 @@ const CanvasComponent: React.FC = () => {
       'rgb(255, 5, 5)'      // 9 Apple
     ];
 
-    const drawPlayer = (ctx: CanvasRenderingContext2D, x: number, y: number, player: number) => {
-
-      const size = blockSize;
-      const centred = size / 2;
-      const radius = centred - 8;
-      switch (player) {
-        case 1:
-          // Cross
-          ctx.beginPath();
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = GAME_COLORS[6];
-          ctx.moveTo(x + 18, y + 10);
-          ctx.lineTo(x + size - 18, y + size - 10);
-          ctx.moveTo(x - 18 + size, y + 10);
-          ctx.lineTo(x + 18, y + size - 10);
-          ctx.stroke();
-          break;
-
-        case 2:
-          // Only can be Nought as two options
-          ctx.beginPath();
-          ctx.lineWidth = 4;
-          ctx.strokeStyle = GAME_COLORS[6];
-          ctx.ellipse(x + centred, y + centred, radius - 3, radius, Math.PI, 0, 2 * Math.PI);
-          ctx.stroke();
-          break;
-
-        default:
-          // should not get here
-          break;
-      }
-    };
     const paint = (ctx: CanvasRenderingContext2D) => {
       const ALIVE = 1;
       const BLANK_COLOR = GAME_COLORS[0]; // White for blank cells
-      const LINE_COLOR = GAME_COLORS[1]; // White for blank cells
-
-      ctx.fillStyle = LINE_COLOR; // The lines are dark coloured
+      const LINE_COLOR = GAME_COLORS[1];  // The lines are dark coloured
+      const { rowSize, colSize, blockSize } = boardBounds;
+      ctx.fillStyle = LINE_COLOR;
       ctx.clearRect(0, 0, colSize * blockSize, rowSize * blockSize);
       ctx.fillRect(1, 1, (colSize * blockSize) - 2, (rowSize * blockSize) - 2);
 
@@ -183,19 +144,24 @@ const CanvasComponent: React.FC = () => {
           ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2); // The cell background
 
           if (board[k] >= ALIVE) {
-            drawPlayer(ctx, x, y, board[k]);
+            drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
           } else {
             if (k === playerHover) {
               const playerNumber = parseInt(player.value);
-              drawPlayer(ctx, x, y, playerNumber);
+              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
             }
             if (k === playerMove) {
               const playerNumber = parseInt(player.value);
-              drawPlayer(ctx, x, y, playerNumber);
+              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
             }
           }
+
         }
       }
+
+      // Draw win result line
+      drawWinResult(ctx, win, GAME_COLORS[4], rowSize, colSize, blockSize);
+
     };
 
     const canvas = canvasRef.current;
@@ -206,23 +172,23 @@ const CanvasComponent: React.FC = () => {
         return () => cancelAnimationFrame(animationFrameId);
       }
     }
-  }, [board, playerHover, playerMove, player]);
+  }, [board, boardBounds, win, playerHover, playerMove, player]);
 
   const gameOption = (title: string, buttonText: string, change: boolean) => (
-    <div className='panel'>
+    <div className='panel ml-3'>
       <p className="panel-heading mb-4 is-size-7">{title}</p>
       <div className='panel-block'>
         <form onSubmit={handleSubmit}>
-          <div className="field">
+          <div className="field ">
             <label className="label">Play Charactor</label>
-            {change && (<Dropdown options={playerCharactors} value={player} onChange={handlePlayerSelect} />)}
-            {change || player.label}
+            {change && (<Dropdown style={{ width: "200px" }} options={playerCharactors} value={player} onChange={handlePlayerSelect} />)}
+            {change || (<div className="has-text-weight-semibold ml-4 pt-1 pb-2 is-size-6">{player.label}</div>)}
           </div>
           <div className="field">
             <div className="control">
               {change && (<label className="checkbox is-size-6">Opponent starts <input checked={isOpponentStart} onChange={handleOpponentStart} type="checkbox" className='is-size-6' /></label>)}
               {change || playMessage}
-              </div>
+            </div>
           </div>
           <div className="field is-grouped">
             <div className="control">
@@ -234,11 +200,12 @@ const CanvasComponent: React.FC = () => {
     </div>
   );
 
+  const { rowSize, colSize, blockSize } = boardBounds;
   return (
     <div className="panel">
       <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
       <div className="columns">
-        <div className="column">
+        <div className="column is-one-third">
           {gameId < 0 && gameOption('Select Game Options', 'Start Game', true)}
           {gameId >= 0 && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
         </div>

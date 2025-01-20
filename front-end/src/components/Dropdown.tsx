@@ -63,10 +63,10 @@ function Dropdown(
       <div className="dropdown-trigger">
         <button type="button" className="button pt-1 pb-0">
           <div
-            className={`columns`}
+            className={`columns is-mobile`}
             onClick={() => setIsOpen((current) => !current)}
           >
-            <div className="column pt-3 is-size-6">{value?.label || 'Select... '}</div>
+            <div className="column">{value?.label || 'Select... '}</div>
             <div className="column is-narrow">{icon}</div>
           </div>
         </button>
