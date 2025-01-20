@@ -8,3 +8,10 @@ mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
     allocated
   }
 }
+
+subscription GameUpdateById {
+  game_Update {
+    gameId
+    board
+  }
+}

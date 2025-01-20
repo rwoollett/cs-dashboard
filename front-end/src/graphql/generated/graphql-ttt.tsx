@@ -17,6 +17,13 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** A board update of tictactoe */
+export type BoardOutput = {
+  __typename?: 'BoardOutput';
+  board: Scalars['String']['output'];
+  gameId: Scalars['Int']['output'];
+};
+
 /** Tic Tac Toes game board. The player can play as Nought(1) or Cross(2). O is empty cell. */
 export type Game = {
   __typename?: 'Game';
@@ -35,6 +42,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createGame: Game;
   removeGameComplete: RemovalResult;
+  serverCreateBoard: Game;
 };
 
 
@@ -45,6 +53,12 @@ export type MutationCreateGameArgs = {
 
 
 export type MutationRemoveGameCompleteArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
+
+export type MutationServerCreateBoardArgs = {
+  board: Scalars['String']['input'];
   gameId: Scalars['Int']['input'];
 };
 
@@ -80,6 +94,11 @@ export type RemovalResult = {
   message: Scalars['String']['output'];
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  game_Update?: Maybe<BoardOutput>;
+};
+
 export type CreateGameMutationVariables = Exact<{
   player: Scalars['Int']['input'];
   opponentStart: Scalars['Boolean']['input'];
@@ -87,6 +106,11 @@ export type CreateGameMutationVariables = Exact<{
 
 
 export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number, player: number, opponentStart: boolean, createdAt: string, allocated: boolean } };
+
+export type GameUpdateByIdSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GameUpdateByIdSubscription = { __typename?: 'Subscription', game_Update?: { __typename?: 'BoardOutput', gameId: number, board: string } | null };
 
 
 export const CreateGameDocument = gql`
@@ -127,3 +151,33 @@ export function useCreateGameMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateGameMutationHookResult = ReturnType<typeof useCreateGameMutation>;
 export type CreateGameMutationResult = Apollo.MutationResult<CreateGameMutation>;
 export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMutation, CreateGameMutationVariables>;
+export const GameUpdateByIdDocument = gql`
+    subscription GameUpdateById {
+  game_Update {
+    gameId
+    board
+  }
+}
+    `;
+
+/**
+ * __useGameUpdateByIdSubscription__
+ *
+ * To run a query within a React component, call `useGameUpdateByIdSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGameUpdateByIdSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameUpdateByIdSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGameUpdateByIdSubscription(baseOptions?: Apollo.SubscriptionHookOptions<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables>(GameUpdateByIdDocument, options);
+      }
+export type GameUpdateByIdSubscriptionHookResult = ReturnType<typeof useGameUpdateByIdSubscription>;
+export type GameUpdateByIdSubscriptionResult = Apollo.SubscriptionResult<GameUpdateByIdSubscription>;

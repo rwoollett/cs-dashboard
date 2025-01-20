@@ -1,11 +1,19 @@
 import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
-import { gql, TypedDocumentNode, useMutation } from '@apollo/client';
-import { CreateGameDocument, CreateGameMutation, CreateGameMutationVariables } from '../graphql/generated/graphql-ttt';
+import { gql, TypedDocumentNode, useMutation, useSubscription } from '@apollo/client';
+import {
+  CreateGameDocument,
+  CreateGameMutation,
+  CreateGameMutationVariables,
+  GameUpdateByIdDocument,
+  GameUpdateByIdSubscription,
+  GameUpdateByIdSubscriptionVariables
+} from '../graphql/generated/graphql-ttt';
 //import _ from 'lodash';
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
+const UPDATE_GAME: TypedDocumentNode<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables> = GameUpdateByIdDocument;
 
 const CanvasComponent: React.FC = () => {
 
@@ -25,6 +33,7 @@ const CanvasComponent: React.FC = () => {
   const [board, setBoard] = useState<number[]>(() => {
     return Array(9).fill(0);
   });
+  const [boardUpdated, setBoardUpdated] = useState(false);
 
   const [result, setResult] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -89,31 +98,6 @@ const CanvasComponent: React.FC = () => {
     setPlayerHover(-1);
   };
 
-  // const UPDATE_GAME: TypedDocumentNode<BoardGenerationSubscription, BoardGenerationSubscriptionVariables> = gql`
-  //       subscription BoardGeneration {
-  //         board_Generation {
-  //           genId
-  //           rows
-  //           cols
-  //           board
-  //         }
-  //       }
-  //     `;
-
-  // useSubscription(
-  //   UPDATE_GAME, {
-  //   context: { service: 'gol' },
-  //   onData({ data }) {
-  //     if (data.data?.board_Generation) {
-  //       //console.log('posted gen board', data.data.board_Generation.board);
-  //       setGameId(data.data?.board_Generation.genId);
-  //       setBlockSize(10);
-  //       setColSize(data.data?.board_Generation.cols);
-  //       setRowSize(data.data?.board_Generation.rows);
-  //       setGenBoard((prev) => _.cloneDeep(data.data!.board_Generation!.board));
-  //     }
-  //   }
-  // });
 
   useEffect(() => {
     const GAME_COLORS: string[] = [
@@ -152,13 +136,15 @@ const CanvasComponent: React.FC = () => {
             if (board[k] >= ALIVE) {
               drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
             } else {
-              if (k === playerHover) {
-                const playerNumber = parseInt(player.value);
-                drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
-              }
-              if (k === playerMove) {
-                const playerNumber = parseInt(player.value);
-                drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+              if (boardUpdated) {
+                if (k === playerHover) {
+                  const playerNumber = parseInt(player.value);
+                  drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+                }
+                if (k === playerMove) {
+                  const playerNumber = parseInt(player.value);
+                  drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+                }
               }
             }
           }
@@ -180,7 +166,7 @@ const CanvasComponent: React.FC = () => {
         return () => cancelAnimationFrame(animationFrameId);
       }
     }
-  }, [board, result, boardBounds, playerHover, playerMove, player, gameId]);
+  }, [board, boardUpdated, result, boardBounds, playerHover, playerMove, player, gameId]);
 
   const gameOption = (title: string, buttonText: string, change: boolean) => (
     <div className='panel ml-3'>
@@ -215,6 +201,7 @@ const CanvasComponent: React.FC = () => {
       console.log(createGameData.createGame);
       setGameId(createGameData.createGame.id);
       setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
+      setStartButtonText('Creating...');
       setBoard(() => {
         let newBoard: number[] = Array(9).fill(0);
         return newBoard;
@@ -223,8 +210,23 @@ const CanvasComponent: React.FC = () => {
         let newResult: number[] = Array(9).fill(0);
         return newResult;
       });
+      setBoardUpdated(false);
     }
-  }, [createGameData, createGameLoading, createGameError]);
+  }, [createGameData, createGameLoading, createGameError, isOpponentStart]);
+
+  useSubscription(
+    UPDATE_GAME, {
+    context: { service: 'ttt' },
+    onData({ data }) {
+      if (data.data?.game_Update) {
+        console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
+        setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
+        const newBoard = data.data.game_Update?.board.split(",");
+        setBoard(newBoard.map((cell) => parseInt(cell)));
+        setBoardUpdated(true);
+      }
+    }
+  });
 
   const { rowSize, colSize, blockSize } = boardBounds;
   return (
