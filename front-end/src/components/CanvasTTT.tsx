@@ -1,10 +1,18 @@
 import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
-//import { gql, TypedDocumentNode } from '@apollo/client';
+import { gql, TypedDocumentNode, useMutation } from '@apollo/client';
+import { CreateGameDocument, CreateGameMutation, CreateGameMutationVariables } from '../graphql/generated/graphql-ttt';
 //import _ from 'lodash';
 
+const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
+
 const CanvasComponent: React.FC = () => {
+
+  const [createGame, { data: createGameData, loading: createGameLoading, error: createGameError }] = useMutation(
+    CREATE_GAME, {
+    context: { service: 'ttt' }
+  });
 
   const boardBounds: BoardBounds = useMemo(() => {
     return {
@@ -18,7 +26,7 @@ const CanvasComponent: React.FC = () => {
     return Array(9).fill(0);
   });
 
-  const win = useMemo(() => [0, 0, 1, 0, 1, 0, 1, 0, 0], []);
+  const [result, setResult] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
   const playerCharactors = [
     { label: 'X (Cross)', value: '1' },
@@ -34,6 +42,7 @@ const CanvasComponent: React.FC = () => {
   const [playerMove, setPlayerMove] = useState<number>(-1);
   const [playerHover, setPlayerHover] = useState<number>(-1);
   const [playMessage, setPlayMessage] = useState<string>(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
+  const [startButtonText, setStartButtonText] = useState('Start Game');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handlePlayerSelect = (newOption: Option) => {
@@ -44,25 +53,21 @@ const CanvasComponent: React.FC = () => {
     setIsOpponentStart(!isOpponentStart);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleCreateGameSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Used to call useMuataion newGame...
     if (gameId >= 0) {
+      setStartButtonText('Start Game');
       setGameId(-1);
       setBoard(() => {
         const newBoard: number[] = Array(9).fill(0);
         return newBoard;
       });
     } else {
-      setGameId(2);
-      setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
-      setBoard(() => {
-        let newBoard: number[] = Array(9).fill(0);
-        newBoard[0] = 2;
-        newBoard[4] = 1;
-        newBoard[8] = 1;
-        return newBoard;
-      });
+      const playerNumber = parseInt(player.value);
+      createGame({
+        variables: { player: playerNumber, opponentStart: isOpponentStart }
+      })
     }
   };
 
@@ -143,16 +148,18 @@ const CanvasComponent: React.FC = () => {
           ctx.fillStyle = BLANK_COLOR;
           ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2); // The cell background
 
-          if (board[k] >= ALIVE) {
-            drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
-          } else {
-            if (k === playerHover) {
-              const playerNumber = parseInt(player.value);
-              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
-            }
-            if (k === playerMove) {
-              const playerNumber = parseInt(player.value);
-              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+          if (gameId > 0) {
+            if (board[k] >= ALIVE) {
+              drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
+            } else {
+              if (k === playerHover) {
+                const playerNumber = parseInt(player.value);
+                drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+              }
+              if (k === playerMove) {
+                const playerNumber = parseInt(player.value);
+                drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+              }
             }
           }
 
@@ -160,7 +167,8 @@ const CanvasComponent: React.FC = () => {
       }
 
       // Draw win result line
-      drawWinResult(ctx, win, GAME_COLORS[4], rowSize, colSize, blockSize);
+      if (gameId > 0)
+        drawWinResult(ctx, result, GAME_COLORS[4], rowSize, colSize, blockSize);
 
     };
 
@@ -172,13 +180,13 @@ const CanvasComponent: React.FC = () => {
         return () => cancelAnimationFrame(animationFrameId);
       }
     }
-  }, [board, boardBounds, win, playerHover, playerMove, player]);
+  }, [board, result, boardBounds, playerHover, playerMove, player, gameId]);
 
   const gameOption = (title: string, buttonText: string, change: boolean) => (
     <div className='panel ml-3'>
       <p className="panel-heading mb-4 is-size-7">{title}</p>
       <div className='panel-block'>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleCreateGameSubmit}>
           <div className="field ">
             <label className="label">Play Charactor</label>
             {change && (<Dropdown style={{ width: "200px" }} options={playerCharactors} value={player} onChange={handlePlayerSelect} />)}
@@ -200,13 +208,31 @@ const CanvasComponent: React.FC = () => {
     </div>
   );
 
+  useEffect(() => {
+    if (createGameLoading) {
+      setStartButtonText('Creating...');
+    } else if (createGameData) {
+      console.log(createGameData.createGame);
+      setGameId(createGameData.createGame.id);
+      setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
+      setBoard(() => {
+        let newBoard: number[] = Array(9).fill(0);
+        return newBoard;
+      });
+      setResult(() => {
+        let newResult: number[] = Array(9).fill(0);
+        return newResult;
+      });
+    }
+  }, [createGameData, createGameLoading, createGameError]);
+
   const { rowSize, colSize, blockSize } = boardBounds;
   return (
     <div className="panel">
       <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
       <div className="columns">
         <div className="column is-one-third">
-          {gameId < 0 && gameOption('Select Game Options', 'Start Game', true)}
+          {gameId < 0 && gameOption('Select Game Options', startButtonText, true)}
           {gameId >= 0 && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
         </div>
         <div className="column">
