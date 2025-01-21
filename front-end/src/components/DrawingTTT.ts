@@ -129,9 +129,9 @@ export const drawPlayer = (ctx: CanvasRenderingContext2D, x: number, y: number, 
 
 export const boardTraverse = (
   x: number, y: number,
-  { rowSize, colSize, blockSize }: BoardBounds,
-  dispatch: React.Dispatch<React.SetStateAction<number>>
+  { rowSize, colSize, blockSize }: BoardBounds
 ) => {
+  let kPos = -1;
   for (let i = 0; i < rowSize; i++) {
     for (let j = 0; j < colSize; j++) {
       const cy = i * blockSize;
@@ -139,10 +139,11 @@ export const boardTraverse = (
       const k = (i * rowSize) + j;
       if (x > cx && x < (cx + blockSize) &&
         y > cy && y < (cy + blockSize)) {
-        dispatch(k);
+        kPos = k;
       }
     }
   }
+  return kPos;
 };
 
 

@@ -3,6 +3,9 @@ import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
 import { TypedDocumentNode, useMutation, useSubscription } from '@apollo/client';
 import {
+  BoardMoveDocument,
+  BoardMoveMutation,
+  BoardMoveMutationVariables,
   CreateGameDocument,
   CreateGameMutation,
   CreateGameMutationVariables,
@@ -13,11 +16,17 @@ import {
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables> = GameUpdateByIdDocument;
+const BOARD_MOVE: TypedDocumentNode<BoardMoveMutation, BoardMoveMutationVariables> = BoardMoveDocument;
 
 const CanvasComponent: React.FC = () => {
 
   const [createGame, { data: createGameData, loading: createGameLoading, error: createGameError }] = useMutation(
     CREATE_GAME, {
+    context: { service: 'ttt' }
+  });
+
+  const [boardMove, { data: boardMoveData, loading: boardMoveLoading, error: boardMoveError }] = useMutation(
+    BOARD_MOVE, {
     context: { service: 'ttt' }
   });
 
@@ -78,7 +87,7 @@ const CanvasComponent: React.FC = () => {
       const playerNumber = parseInt(player.value);
       createGame({
         variables: { player: playerNumber, opponentStart: isOpponentStart }
-      })
+      });
     }
   };
 
@@ -86,19 +95,24 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    boardTraverse(x, y, boardBounds, setPlayerHover);
+    const k = boardTraverse(x, y, boardBounds);
+    setPlayerHover(k);
   };
 
   const handleOnMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    if (boardUpdated)
-      boardTraverse(x, y, boardBounds, setPlayerMove);
-    //setBoard((prev) => prev[])
-    // We make a move mutation and wait for the next gameID update
-    // Then make setBoardUpdated(false) to wait till gameUpdateById subscribed notification arrives.
-    setBoardUpdated(false);
+    if (boardUpdated) {
+      const k = boardTraverse(x, y, boardBounds);
+      if (board[k] === 0) {
+        boardMove({
+          variables: { gameId, moveCell: k }
+        });
+        setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
+        setBoardUpdated(false);
+      }
+    }
   };
 
   const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -230,6 +244,7 @@ const CanvasComponent: React.FC = () => {
         setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
         const newBoard = data.data.game_Update?.board.split(",");
         setBoard(newBoard.map((cell) => parseInt(cell)));
+        setPlayerMove(-1);
         setBoardUpdated(true);
       }
     }

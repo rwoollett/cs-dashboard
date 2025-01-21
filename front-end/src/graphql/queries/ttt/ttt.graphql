@@ -9,6 +9,15 @@ mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
   }
 }
 
+mutation BoardMove($gameId: Int!, $moveCell: Int!) {
+  boardMove(gameId: $gameId, moveCell: $moveCell) {
+    id
+    gameId
+    moveCell
+    allocated
+  }
+}
+
 subscription GameUpdateById {
   game_Update {
     gameId
