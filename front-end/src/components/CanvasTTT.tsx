@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
-import { gql, TypedDocumentNode, useMutation, useSubscription } from '@apollo/client';
+import { TypedDocumentNode, useMutation, useSubscription } from '@apollo/client';
 import {
   CreateGameDocument,
   CreateGameMutation,
@@ -10,7 +10,6 @@ import {
   GameUpdateByIdSubscription,
   GameUpdateByIdSubscriptionVariables
 } from '../graphql/generated/graphql-ttt';
-//import _ from 'lodash';
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables> = GameUpdateByIdDocument;
@@ -34,7 +33,6 @@ const CanvasComponent: React.FC = () => {
     return Array(9).fill(0);
   });
   const [boardUpdated, setBoardUpdated] = useState(false);
-
   const [result, setResult] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
   const playerCharactors = [
@@ -45,13 +43,13 @@ const CanvasComponent: React.FC = () => {
   // GameID of -1 means no game in action - it shows the start game options
   const [gameId, setGameId] = useState(-1);
 
-  //const gameId = 1;
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
   const [isOpponentStart, setIsOpponentStart] = useState(true);
   const [playerMove, setPlayerMove] = useState<number>(-1);
   const [playerHover, setPlayerHover] = useState<number>(-1);
   const [playMessage, setPlayMessage] = useState<string>(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
   const [startButtonText, setStartButtonText] = useState('Start Game');
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handlePlayerSelect = (newOption: Option) => {
@@ -66,6 +64,10 @@ const CanvasComponent: React.FC = () => {
     event.preventDefault();
     // Used to call useMuataion newGame...
     if (gameId >= 0) {
+      // When a game is with finish result, or the finish game button is pressed.
+      // What happens is the backend Game table and GameID needs to be cleaned up. Would be another 
+      // mutation is finished button is pressed, otherwise GameUpdateById will send game result, and 
+      // the gameId is ended. We set gameId to -1 then.
       setStartButtonText('Start Game');
       setGameId(-1);
       setBoard(() => {
@@ -91,7 +93,12 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    boardTraverse(x, y, boardBounds, setPlayerMove);
+    if (boardUpdated)
+      boardTraverse(x, y, boardBounds, setPlayerMove);
+    //setBoard((prev) => prev[])
+    // We make a move mutation and wait for the next gameID update
+    // Then make setBoardUpdated(false) to wait till gameUpdateById subscribed notification arrives.
+    setBoardUpdated(false);
   };
 
   const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -136,12 +143,12 @@ const CanvasComponent: React.FC = () => {
             if (board[k] >= ALIVE) {
               drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
             } else {
+              if (k === playerMove) {
+                const playerNumber = parseInt(player.value);
+                drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+              }
               if (boardUpdated) {
                 if (k === playerHover) {
-                  const playerNumber = parseInt(player.value);
-                  drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
-                }
-                if (k === playerMove) {
                   const playerNumber = parseInt(player.value);
                   drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
                 }
@@ -200,7 +207,7 @@ const CanvasComponent: React.FC = () => {
     } else if (createGameData) {
       console.log(createGameData.createGame);
       setGameId(createGameData.createGame.id);
-      setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
+      setPlayMessage(createGameData.createGame.opponentStart ? "Opponent started. Good luck!" : "You make first move.")
       setStartButtonText('Creating...');
       setBoard(() => {
         let newBoard: number[] = Array(9).fill(0);
@@ -212,7 +219,7 @@ const CanvasComponent: React.FC = () => {
       });
       setBoardUpdated(false);
     }
-  }, [createGameData, createGameLoading, createGameError, isOpponentStart]);
+  }, [createGameData, createGameLoading, createGameError]);
 
   useSubscription(
     UPDATE_GAME, {
