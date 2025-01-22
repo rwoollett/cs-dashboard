@@ -106,6 +106,11 @@ export type Subscription = {
   game_Update?: Maybe<BoardOutput>;
 };
 
+
+export type SubscriptionGame_UpdateArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
 export type CreateGameMutationVariables = Exact<{
   player: Scalars['Int']['input'];
   opponentStart: Scalars['Boolean']['input'];
@@ -122,10 +127,12 @@ export type BoardMoveMutationVariables = Exact<{
 
 export type BoardMoveMutation = { __typename?: 'Mutation', boardMove: { __typename?: 'PlayerMove', id: number, gameId: number, moveCell: number, allocated: boolean } };
 
-export type GameUpdateByIdSubscriptionVariables = Exact<{ [key: string]: never; }>;
+export type GameUpdateByGameIdSubscriptionVariables = Exact<{
+  gameId: Scalars['Int']['input'];
+}>;
 
 
-export type GameUpdateByIdSubscription = { __typename?: 'Subscription', game_Update?: { __typename?: 'BoardOutput', gameId: number, board: string } | null };
+export type GameUpdateByGameIdSubscription = { __typename?: 'Subscription', game_Update?: { __typename?: 'BoardOutput', board: string, gameId: number } | null };
 
 
 export const CreateGameDocument = gql`
@@ -203,33 +210,34 @@ export function useBoardMoveMutation(baseOptions?: Apollo.MutationHookOptions<Bo
 export type BoardMoveMutationHookResult = ReturnType<typeof useBoardMoveMutation>;
 export type BoardMoveMutationResult = Apollo.MutationResult<BoardMoveMutation>;
 export type BoardMoveMutationOptions = Apollo.BaseMutationOptions<BoardMoveMutation, BoardMoveMutationVariables>;
-export const GameUpdateByIdDocument = gql`
-    subscription GameUpdateById {
-  game_Update {
-    gameId
+export const GameUpdateByGameIdDocument = gql`
+    subscription GameUpdateByGameId($gameId: Int!) {
+  game_Update(gameId: $gameId) {
     board
+    gameId
   }
 }
     `;
 
 /**
- * __useGameUpdateByIdSubscription__
+ * __useGameUpdateByGameIdSubscription__
  *
- * To run a query within a React component, call `useGameUpdateByIdSubscription` and pass it any options that fit your needs.
- * When your component renders, `useGameUpdateByIdSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGameUpdateByGameIdSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGameUpdateByGameIdSubscription` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGameUpdateByIdSubscription({
+ * const { data, loading, error } = useGameUpdateByGameIdSubscription({
  *   variables: {
+ *      gameId: // value for 'gameId'
  *   },
  * });
  */
-export function useGameUpdateByIdSubscription(baseOptions?: Apollo.SubscriptionHookOptions<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables>) {
+export function useGameUpdateByGameIdSubscription(baseOptions: Apollo.SubscriptionHookOptions<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> & ({ variables: GameUpdateByGameIdSubscriptionVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useSubscription<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables>(GameUpdateByIdDocument, options);
+        return Apollo.useSubscription<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables>(GameUpdateByGameIdDocument, options);
       }
-export type GameUpdateByIdSubscriptionHookResult = ReturnType<typeof useGameUpdateByIdSubscription>;
-export type GameUpdateByIdSubscriptionResult = Apollo.SubscriptionResult<GameUpdateByIdSubscription>;
+export type GameUpdateByGameIdSubscriptionHookResult = ReturnType<typeof useGameUpdateByGameIdSubscription>;
+export type GameUpdateByGameIdSubscriptionResult = Apollo.SubscriptionResult<GameUpdateByGameIdSubscription>;

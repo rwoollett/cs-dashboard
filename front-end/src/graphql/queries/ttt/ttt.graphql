@@ -18,9 +18,9 @@ mutation BoardMove($gameId: Int!, $moveCell: Int!) {
   }
 }
 
-subscription GameUpdateById {
-  game_Update {
-    gameId
+subscription GameUpdateByGameId($gameId: Int!) {
+  game_Update(gameId: $gameId) {
     board
+    gameId
   }
 }

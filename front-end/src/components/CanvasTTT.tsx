@@ -9,14 +9,14 @@ import {
   CreateGameDocument,
   CreateGameMutation,
   CreateGameMutationVariables,
-  GameUpdateByIdDocument,
-  GameUpdateByIdSubscription,
-  GameUpdateByIdSubscriptionVariables
+  GameUpdateByGameIdDocument,
+  GameUpdateByGameIdSubscription,
+  GameUpdateByGameIdSubscriptionVariables,
 } from '../graphql/generated/graphql-ttt';
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
-const UPDATE_GAME: TypedDocumentNode<GameUpdateByIdSubscription, GameUpdateByIdSubscriptionVariables> = GameUpdateByIdDocument;
 const BOARD_MOVE: TypedDocumentNode<BoardMoveMutation, BoardMoveMutationVariables> = BoardMoveDocument;
+const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
 const CanvasComponent: React.FC = () => {
 
@@ -25,7 +25,7 @@ const CanvasComponent: React.FC = () => {
     context: { service: 'ttt' }
   });
 
-  const [boardMove, { data: boardMoveData, loading: boardMoveLoading, error: boardMoveError }] = useMutation(
+  const [boardMove] = useMutation(
     BOARD_MOVE, {
     context: { service: 'ttt' }
   });
@@ -49,8 +49,8 @@ const CanvasComponent: React.FC = () => {
     { label: 'O (Nought)', value: '2' },
   ];
 
-  // GameID of -1 means no game in action - it shows the start game options
-  const [gameId, setGameId] = useState(-1);
+  // GameID of null means no game in action - it shows the start game options
+  const [gameId, setGameId] = useState<number>(-1);
 
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
   const [isOpponentStart, setIsOpponentStart] = useState(true);
@@ -103,7 +103,7 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    if (boardUpdated) {
+    if (gameId >= 0 && boardUpdated) {
       const k = boardTraverse(x, y, boardBounds);
       if (board[k] === 0) {
         boardMove({
@@ -153,7 +153,7 @@ const CanvasComponent: React.FC = () => {
           ctx.fillStyle = BLANK_COLOR;
           ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2); // The cell background
 
-          if (gameId > 0) {
+          if (gameId >= 0) {
             if (board[k] >= ALIVE) {
               drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
             } else {
@@ -174,7 +174,7 @@ const CanvasComponent: React.FC = () => {
       }
 
       // Draw win result line
-      if (gameId > 0)
+      if (gameId >= 0)
         drawWinResult(ctx, result, GAME_COLORS[4], rowSize, colSize, blockSize);
 
     };
@@ -237,7 +237,9 @@ const CanvasComponent: React.FC = () => {
 
   useSubscription(
     UPDATE_GAME, {
+    variables: { gameId },
     context: { service: 'ttt' },
+    skip: gameId === -1,
     onData({ data }) {
       if (data.data?.game_Update) {
         console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
@@ -256,7 +258,7 @@ const CanvasComponent: React.FC = () => {
       <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
       <div className="columns">
         <div className="column is-one-third">
-          {gameId < 0 && gameOption('Select Game Options', startButtonText, true)}
+          {gameId === -1 && gameOption('Select Game Options', startButtonText, true)}
           {gameId >= 0 && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
         </div>
         <div className="column">
