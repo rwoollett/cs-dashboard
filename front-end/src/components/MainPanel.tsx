@@ -1,5 +1,6 @@
 import React from "react";
 import Dashboard from "./dashboard/Dashboard";
+import CanvasGOL from "./CanvasGOL";
 import CanvasTTT from "./CanvasTTT";
 
 /**
@@ -16,6 +17,9 @@ const MainPanel: React.FC = () => {
         </div>
         <div className="px-4 pb-6">
           <Dashboard />
+        </div>
+        <div className="px-4 pb-6">
+          <CanvasGOL />
         </div>
       </div>
     </section>);
