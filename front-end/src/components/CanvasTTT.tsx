@@ -63,9 +63,8 @@ const CanvasComponent: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const playerNumber = parseInt(player.value);
     createGame({
-      variables: { player: playerNumber, opponentStart: isOpponentStart }
+      variables: { userId: 99999999 }
     });
   }, [createGame, player]);
 
@@ -125,8 +124,9 @@ const CanvasComponent: React.FC = () => {
     if (gameActive && boardUpdated) {
       const k = boardTraverse(x, y, boardBounds);
       if (k !== -1 && board[k] === 0) {
+        const playerNumber = parseInt(player.value);
         boardMove({
-          variables: { gameId, moveCell: k }
+          variables: { gameId, player: playerNumber, moveCell: k }
         });
         setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
         setBoardUpdated(false);

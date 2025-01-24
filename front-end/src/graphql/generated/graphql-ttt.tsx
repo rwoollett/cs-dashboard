@@ -27,15 +27,10 @@ export type BoardOutput = {
 /** Tic Tac Toes game board. The player can play as Nought(1) or Cross(2). O is empty cell. */
 export type Game = {
   __typename?: 'Game';
-  /** When found with query getCreateGame as findFirst this is marked true. */
-  allocated: Scalars['Boolean']['output'];
   board: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   id: Scalars['Int']['output'];
-  opponentStart: Scalars['Boolean']['output'];
-  player: Scalars['Int']['output'];
-  /** The players moves made against oppenent */
-  playerMoves: Array<Maybe<PlayerMove>>;
+  userId: Scalars['Int']['output'];
 };
 
 export type Mutation = {
@@ -50,12 +45,12 @@ export type Mutation = {
 export type MutationBoardMoveArgs = {
   gameId: Scalars['Int']['input'];
   moveCell: Scalars['Int']['input'];
+  player: Scalars['Int']['input'];
 };
 
 
 export type MutationCreateGameArgs = {
-  opponentStart: Scalars['Boolean']['input'];
-  player: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
 };
 
 
@@ -74,9 +69,11 @@ export type PlayerMove = {
   __typename?: 'PlayerMove';
   /** When found with query getPlayerMove as findFirst this is marked true. */
   allocated: Scalars['Boolean']['output'];
+  game: Game;
   gameId: Scalars['Int']['output'];
   id: Scalars['Int']['output'];
   moveCell: Scalars['Int']['output'];
+  player: Scalars['Int']['output'];
 };
 
 export type Query = {
@@ -106,15 +103,15 @@ export type SubscriptionGame_UpdateArgs = {
 };
 
 export type CreateGameMutationVariables = Exact<{
-  player: Scalars['Int']['input'];
-  opponentStart: Scalars['Boolean']['input'];
+  userId: Scalars['Int']['input'];
 }>;
 
 
-export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number, player: number, opponentStart: boolean, createdAt: string, allocated: boolean } };
+export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number } };
 
 export type BoardMoveMutationVariables = Exact<{
   gameId: Scalars['Int']['input'];
+  player: Scalars['Int']['input'];
   moveCell: Scalars['Int']['input'];
 }>;
 
@@ -130,13 +127,9 @@ export type GameUpdateByGameIdSubscription = { __typename?: 'Subscription', game
 
 
 export const CreateGameDocument = gql`
-    mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
-  createGame(player: $player, opponentStart: $opponentStart) {
+    mutation CreateGame($userId: Int!) {
+  createGame(userId: $userId) {
     id
-    player
-    opponentStart
-    createdAt
-    allocated
   }
 }
     `;
@@ -155,8 +148,7 @@ export type CreateGameMutationFn = Apollo.MutationFunction<CreateGameMutation, C
  * @example
  * const [createGameMutation, { data, loading, error }] = useCreateGameMutation({
  *   variables: {
- *      player: // value for 'player'
- *      opponentStart: // value for 'opponentStart'
+ *      userId: // value for 'userId'
  *   },
  * });
  */
@@ -168,8 +160,8 @@ export type CreateGameMutationHookResult = ReturnType<typeof useCreateGameMutati
 export type CreateGameMutationResult = Apollo.MutationResult<CreateGameMutation>;
 export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMutation, CreateGameMutationVariables>;
 export const BoardMoveDocument = gql`
-    mutation BoardMove($gameId: Int!, $moveCell: Int!) {
-  boardMove(gameId: $gameId, moveCell: $moveCell) {
+    mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
+  boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
     id
     gameId
     moveCell
@@ -193,6 +185,7 @@ export type BoardMoveMutationFn = Apollo.MutationFunction<BoardMoveMutation, Boa
  * const [boardMoveMutation, { data, loading, error }] = useBoardMoveMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
+ *      player: // value for 'player'
  *      moveCell: // value for 'moveCell'
  *   },
  * });
