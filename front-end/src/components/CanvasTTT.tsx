@@ -20,7 +20,7 @@ const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateB
 
 const CanvasComponent: React.FC = () => {
 
-  const [createGame, { data: createGameData, loading: createGameLoading, error: createGameError }] = useMutation(
+  const [createGame, { data: createGameData }] = useMutation(
     CREATE_GAME, {
     context: { service: 'ttt' }
   });
@@ -49,8 +49,9 @@ const CanvasComponent: React.FC = () => {
     { label: 'O (Nought)', value: '2' },
   ];
 
-  // GameID of null means no game in action - it shows the start game options
+  // GameID is required before any ui activity on the page
   const [gameId, setGameId] = useState<number>(-1);
+  const [gameActive, setGameActive] = useState(false);
 
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
   const [isOpponentStart, setIsOpponentStart] = useState(true);
@@ -61,33 +62,75 @@ const CanvasComponent: React.FC = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const handlePlayerSelect = (newOption: Option) => {
-    setPlayer(newOption);
-  };
+  useEffect(() => {
+    const playerNumber = parseInt(player.value);
+    createGame({
+      variables: { player: playerNumber, opponentStart: isOpponentStart }
+    });
+  }, [createGame, player]);
 
-  const handleOpponentStart = (event: ChangeEvent<HTMLInputElement>) => {
-    setIsOpponentStart(!isOpponentStart);
-  };
+  useEffect(() => {
+    if (createGameData) {
+      console.log(createGameData.createGame);
+      setGameId(createGameData.createGame.id);
+    }
+  }, [createGameData]);
+
+  useSubscription(
+    UPDATE_GAME, {
+    variables: { gameId },
+    context: { service: 'ttt' },
+    skip: gameId === -1,
+    onData({ data }) {
+      if (data.data?.game_Update) {
+        console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
+        setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
+        const newBoard = data.data.game_Update?.board.split(",");
+        setBoard(newBoard.map((cell) => parseInt(cell)));
+        setPlayerMove(-1);
+        setBoardUpdated(true);
+      }
+    }
+  });
 
   const handleCreateGameSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Used to call useMuataion newGame...
-    if (gameId >= 0) {
-      // When a game is with finish result, or the finish game button is pressed.
-      // What happens is the backend Game table and GameID needs to be cleaned up. Would be another 
-      // mutation is finished button is pressed, otherwise GameUpdateById will send game result, and 
-      // the gameId is ended. We set gameId to -1 then.
+    if (gameActive) {
+
+      setGameActive(false);
+
+    } else {
       setStartButtonText('Start Game');
-      setGameId(-1);
+      setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
       setBoard(() => {
-        const newBoard: number[] = Array(9).fill(0);
+        let newBoard: number[] = Array(9).fill(0);
         return newBoard;
       });
-    } else {
-      const playerNumber = parseInt(player.value);
-      createGame({
-        variables: { player: playerNumber, opponentStart: isOpponentStart }
+      setResult(() => {
+        let newResult: number[] = Array(9).fill(0);
+        return newResult;
       });
+      setGameActive(true);
+      // Depending an wanting opponent (AI) to start first would wait for AI move before
+      // boardUpdated on Start playing game.
+      setPlayerMove(-1);
+      setBoardUpdated(true);
+    }
+  };
+
+  const handleOnMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    if (gameActive && boardUpdated) {
+      const k = boardTraverse(x, y, boardBounds);
+      if (k !== -1 && board[k] === 0) {
+        boardMove({
+          variables: { gameId, moveCell: k }
+        });
+        setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
+        setBoardUpdated(false);
+      }
     }
   };
 
@@ -99,26 +142,17 @@ const CanvasComponent: React.FC = () => {
     setPlayerHover(k);
   };
 
-  const handleOnMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    if (gameId >= 0 && boardUpdated) {
-      const k = boardTraverse(x, y, boardBounds);
-      if (board[k] === 0) {
-        boardMove({
-          variables: { gameId, moveCell: k }
-        });
-        setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
-        setBoardUpdated(false);
-      }
-    }
-  };
-
   const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
     setPlayerHover(-1);
   };
 
+  const handlePlayerSelect = (newOption: Option) => {
+    setPlayer(newOption);
+  };
+
+  const handleOpponentStart = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsOpponentStart(!isOpponentStart);
+  };
 
   useEffect(() => {
     const GAME_COLORS: string[] = [
@@ -153,29 +187,29 @@ const CanvasComponent: React.FC = () => {
           ctx.fillStyle = BLANK_COLOR;
           ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2); // The cell background
 
-          if (gameId >= 0) {
-            if (board[k] >= ALIVE) {
-              drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
-            } else {
-              if (k === playerMove) {
+          //          if (gameId >= 0) {
+          if (board[k] >= ALIVE) {
+            drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
+          } else {
+            if (k === playerMove) {
+              const playerNumber = parseInt(player.value);
+              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+            }
+            if (boardUpdated) {
+              if (k === playerHover) {
                 const playerNumber = parseInt(player.value);
                 drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
               }
-              if (boardUpdated) {
-                if (k === playerHover) {
-                  const playerNumber = parseInt(player.value);
-                  drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
-                }
-              }
             }
           }
+          //          }
 
         }
       }
 
       // Draw win result line
-      if (gameId >= 0)
-        drawWinResult(ctx, result, GAME_COLORS[4], rowSize, colSize, blockSize);
+      //if (gameId >= 0)
+      drawWinResult(ctx, result, GAME_COLORS[4], rowSize, colSize, blockSize);
 
     };
 
@@ -187,7 +221,7 @@ const CanvasComponent: React.FC = () => {
         return () => cancelAnimationFrame(animationFrameId);
       }
     }
-  }, [board, boardUpdated, result, boardBounds, playerHover, playerMove, player, gameId]);
+  }, [board, boardUpdated, result, boardBounds, playerHover, playerMove, player]);
 
   const gameOption = (title: string, buttonText: string, change: boolean) => (
     <div className='panel ml-3'>
@@ -215,51 +249,14 @@ const CanvasComponent: React.FC = () => {
     </div>
   );
 
-  useEffect(() => {
-    if (createGameLoading) {
-      setStartButtonText('Creating...');
-    } else if (createGameData) {
-      console.log(createGameData.createGame);
-      setGameId(createGameData.createGame.id);
-      setPlayMessage(createGameData.createGame.opponentStart ? "Opponent started. Good luck!" : "You make first move.")
-      setStartButtonText('Creating...');
-      setBoard(() => {
-        let newBoard: number[] = Array(9).fill(0);
-        return newBoard;
-      });
-      setResult(() => {
-        let newResult: number[] = Array(9).fill(0);
-        return newResult;
-      });
-      setBoardUpdated(false);
-    }
-  }, [createGameData, createGameLoading, createGameError]);
-
-  useSubscription(
-    UPDATE_GAME, {
-    variables: { gameId },
-    context: { service: 'ttt' },
-    skip: gameId === -1,
-    onData({ data }) {
-      if (data.data?.game_Update) {
-        console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
-        setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
-        const newBoard = data.data.game_Update?.board.split(",");
-        setBoard(newBoard.map((cell) => parseInt(cell)));
-        setPlayerMove(-1);
-        setBoardUpdated(true);
-      }
-    }
-  });
-
   const { rowSize, colSize, blockSize } = boardBounds;
   return (
     <div className="panel">
       <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
       <div className="columns">
         <div className="column is-one-third">
-          {gameId === -1 && gameOption('Select Game Options', startButtonText, true)}
-          {gameId >= 0 && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
+          {gameActive || gameOption('Select Game Options', startButtonText, true)}
+          {gameActive && gameOption('Playing Tic Tac Toe!', 'Finish Game', false)}
         </div>
         <div className="column">
           <canvas className='is-clickable'

@@ -81,13 +81,7 @@ export type PlayerMove = {
 
 export type Query = {
   __typename?: 'Query';
-  getNewBoard?: Maybe<Array<Maybe<Game>>>;
   getPlayerMove?: Maybe<Array<Maybe<PlayerMove>>>;
-};
-
-
-export type QueryGetNewBoardArgs = {
-  nodeId: Scalars['String']['input'];
 };
 
 
