@@ -34,7 +34,7 @@ const CanvasComponent: React.FC = () => {
     context: { service: 'ttt' }
   });
 
-  const [boardMove] = useMutation(
+  const [boardMove, { data: boardMoveData}] = useMutation(
     BOARD_MOVE, {
     context: { service: 'ttt' }
   });
@@ -68,6 +68,7 @@ const CanvasComponent: React.FC = () => {
   const [playerHover, setPlayerHover] = useState<number>(-1);
   const [playMessage, setPlayMessage] = useState<string>(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
   const [startButtonText, setStartButtonText] = useState('Start Game');
+  const [hasMovedBoard, setHasMovedBoard] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -95,19 +96,27 @@ const CanvasComponent: React.FC = () => {
     }
   }, [startGameData]);
 
+  useEffect(() => {
+    if (boardMoveData) {
+      console.log(boardMoveData.boardMove);
+      setHasMovedBoard(true);
+    }
+  }, [boardMoveData]);
+
   useSubscription(
     UPDATE_GAME, {
     variables: { gameId },
     context: { service: 'ttt' },
     skip: gameId === -1,
-    onData({ data }) {
+      onData({ data }) {
       if (data.data?.game_Update) {
         console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
-        setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
+        setPlayMessage("Your turn.");
         const newBoard = data.data.game_Update?.board.split(",");
         setBoard(newBoard.map((cell) => parseInt(cell)));
         setPlayerMove(-1);
         setBoardUpdated(true);
+        setHasMovedBoard(false);
       }
     }
   });
@@ -150,7 +159,8 @@ const CanvasComponent: React.FC = () => {
         });
         setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
         setBoardUpdated(false);
-      }
+        setHasMovedBoard(false);
+      } 
     }
   };
 
@@ -158,8 +168,10 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    const k = boardTraverse(x, y, boardBounds);
-    setPlayerHover(k);
+    if (gameActive && boardUpdated) { 
+      const k = boardTraverse(x, y, boardBounds);
+      setPlayerHover(k);
+    }
   };
 
   const handleOnMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -271,7 +283,7 @@ const CanvasComponent: React.FC = () => {
   const { rowSize, colSize, blockSize } = boardBounds;
   return (
     <div className="panel">
-      <p className="panel-heading mb-4">Tic Tac Toe {gameId}</p>
+      <p className="panel-heading mb-4">Tic Tac Toe {gameId} {gameActive && hasMovedBoard && "Move made"} {gameActive && (hasMovedBoard || "Make a move")}</p>
       <div className="columns">
         <div className="column is-one-third">
           {gameActive || gameOption('Select Game Options', startButtonText, true)}
