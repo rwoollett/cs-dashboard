@@ -1,6 +1,6 @@
 import React from "react";
 import Dashboard from "./dashboard/Dashboard";
-import CanvasGOL from "./CanvasGOL";
+//import CanvasGOL from "./CanvasGOL";
 import CanvasTTT from "./CanvasTTT";
 
 /**

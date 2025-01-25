@@ -14,12 +14,14 @@ mutation StartGame($gameId: Int!) {
   }
 }
 
-mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
-  boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
+mutation BoardMove($gameId: Int!, $moveCell: Int!, $player: Int!, $isOpponentStart: Boolean!) {
+  boardMove(gameId: $gameId, moveCell: $moveCell, player: $player, isOpponentStart: $isOpponentStart) {
     id
-    gameId
-    moveCell
     allocated
+    gameId
+    player
+    moveCell
+    isOpponentStart
   }
 }
 

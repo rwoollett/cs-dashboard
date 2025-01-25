@@ -45,6 +45,7 @@ export type Mutation = {
 
 export type MutationBoardMoveArgs = {
   gameId: Scalars['Int']['input'];
+  isOpponentStart: Scalars['Boolean']['input'];
   moveCell: Scalars['Int']['input'];
   player: Scalars['Int']['input'];
 };
@@ -78,6 +79,7 @@ export type PlayerMove = {
   game: Game;
   gameId: Scalars['Int']['output'];
   id: Scalars['Int']['output'];
+  isOpponentStart: Scalars['Boolean']['output'];
   moveCell: Scalars['Int']['output'];
   player: Scalars['Int']['output'];
 };
@@ -124,12 +126,13 @@ export type StartGameMutation = { __typename?: 'Mutation', startGame: { __typena
 
 export type BoardMoveMutationVariables = Exact<{
   gameId: Scalars['Int']['input'];
-  player: Scalars['Int']['input'];
   moveCell: Scalars['Int']['input'];
+  player: Scalars['Int']['input'];
+  isOpponentStart: Scalars['Boolean']['input'];
 }>;
 
 
-export type BoardMoveMutation = { __typename?: 'Mutation', boardMove: { __typename?: 'PlayerMove', id: number, gameId: number, moveCell: number, allocated: boolean } };
+export type BoardMoveMutation = { __typename?: 'Mutation', boardMove: { __typename?: 'PlayerMove', id: number, allocated: boolean, gameId: number, player: number, moveCell: number, isOpponentStart: boolean } };
 
 export type GameUpdateByGameIdSubscriptionVariables = Exact<{
   gameId: Scalars['Int']['input'];
@@ -209,12 +212,19 @@ export type StartGameMutationHookResult = ReturnType<typeof useStartGameMutation
 export type StartGameMutationResult = Apollo.MutationResult<StartGameMutation>;
 export type StartGameMutationOptions = Apollo.BaseMutationOptions<StartGameMutation, StartGameMutationVariables>;
 export const BoardMoveDocument = gql`
-    mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
-  boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
+    mutation BoardMove($gameId: Int!, $moveCell: Int!, $player: Int!, $isOpponentStart: Boolean!) {
+  boardMove(
+    gameId: $gameId
+    moveCell: $moveCell
+    player: $player
+    isOpponentStart: $isOpponentStart
+  ) {
     id
-    gameId
-    moveCell
     allocated
+    gameId
+    player
+    moveCell
+    isOpponentStart
   }
 }
     `;
@@ -234,8 +244,9 @@ export type BoardMoveMutationFn = Apollo.MutationFunction<BoardMoveMutation, Boa
  * const [boardMoveMutation, { data, loading, error }] = useBoardMoveMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
- *      player: // value for 'player'
  *      moveCell: // value for 'moveCell'
+ *      player: // value for 'player'
+ *      isOpponentStart: // value for 'isOpponentStart'
  *   },
  * });
  */

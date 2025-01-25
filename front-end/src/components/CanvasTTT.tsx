@@ -34,7 +34,7 @@ const CanvasComponent: React.FC = () => {
     context: { service: 'ttt' }
   });
 
-  const [boardMove, { data: boardMoveData}] = useMutation(
+  const [boardMove, { data: boardMoveData }] = useMutation(
     BOARD_MOVE, {
     context: { service: 'ttt' }
   });
@@ -108,7 +108,7 @@ const CanvasComponent: React.FC = () => {
     variables: { gameId },
     context: { service: 'ttt' },
     skip: gameId === -1,
-      onData({ data }) {
+    onData({ data }) {
       if (data.data?.game_Update) {
         console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
         setPlayMessage("Your turn.");
@@ -142,7 +142,15 @@ const CanvasComponent: React.FC = () => {
 
       // Depending an wanting opponent (AI) to start first would wait for AI move before
       // boardUpdated on Start playing game.
-      setBoardUpdated(true);
+      if (isOpponentStart) {
+        const playerNumber = parseInt(player.value);
+        boardMove({
+          variables: { gameId, player: playerNumber, moveCell: -1, isOpponentStart }
+        });
+
+      } else {
+        setBoardUpdated(true);
+      }
     }
   };
 
@@ -155,12 +163,12 @@ const CanvasComponent: React.FC = () => {
       if (k !== -1 && board[k] === 0) {
         const playerNumber = parseInt(player.value);
         boardMove({
-          variables: { gameId, player: playerNumber, moveCell: k }
+          variables: { gameId, player: playerNumber, moveCell: k, isOpponentStart }
         });
         setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
         setBoardUpdated(false);
         setHasMovedBoard(false);
-      } 
+      }
     }
   };
 
@@ -168,7 +176,7 @@ const CanvasComponent: React.FC = () => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    if (gameActive && boardUpdated) { 
+    if (gameActive && boardUpdated) {
       const k = boardTraverse(x, y, boardBounds);
       setPlayerHover(k);
     }
