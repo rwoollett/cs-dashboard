@@ -12,9 +12,13 @@ import {
   GameUpdateByGameIdDocument,
   GameUpdateByGameIdSubscription,
   GameUpdateByGameIdSubscriptionVariables,
+  StartGameDocument,
+  StartGameMutation,
+  StartGameMutationVariables,
 } from '../graphql/generated/graphql-ttt';
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
+const START_GAME: TypedDocumentNode<StartGameMutation, StartGameMutationVariables> = StartGameDocument;
 const BOARD_MOVE: TypedDocumentNode<BoardMoveMutation, BoardMoveMutationVariables> = BoardMoveDocument;
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
@@ -22,6 +26,11 @@ const CanvasComponent: React.FC = () => {
 
   const [createGame, { data: createGameData }] = useMutation(
     CREATE_GAME, {
+    context: { service: 'ttt' }
+  });
+
+  const [startGame, { data: startGameData }] = useMutation(
+    START_GAME, {
     context: { service: 'ttt' }
   });
 
@@ -75,6 +84,17 @@ const CanvasComponent: React.FC = () => {
     }
   }, [createGameData]);
 
+  useEffect(() => {
+    if (startGameData) {
+      console.log(startGameData.startGame);
+      setBoard(() => {
+        let newBoard: number[] = startGameData.startGame.board.split(",").map((cell) => parseInt(cell));
+        return newBoard;
+      });
+      setGameActive(true);
+    }
+  }, [startGameData]);
+
   useSubscription(
     UPDATE_GAME, {
     variables: { gameId },
@@ -94,25 +114,25 @@ const CanvasComponent: React.FC = () => {
 
   const handleCreateGameSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (gameActive) {
 
+    // The start/finish button press does clear all game board and results
+    setResult(() => {
+      let newResult: number[] = Array(9).fill(0);
+      return newResult;
+    });
+    setPlayerMove(-1);
+
+    if (gameActive) {
       setGameActive(false);
 
     } else {
+      startGame({ variables: { gameId } });
       setStartButtonText('Start Game');
       setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
-      setBoard(() => {
-        let newBoard: number[] = Array(9).fill(0);
-        return newBoard;
-      });
-      setResult(() => {
-        let newResult: number[] = Array(9).fill(0);
-        return newResult;
-      });
-      setGameActive(true);
+      //setGameActive(true);
+
       // Depending an wanting opponent (AI) to start first would wait for AI move before
       // boardUpdated on Start playing game.
-      setPlayerMove(-1);
       setBoardUpdated(true);
     }
   };
@@ -187,28 +207,27 @@ const CanvasComponent: React.FC = () => {
           ctx.fillStyle = BLANK_COLOR;
           ctx.fillRect(x + 1, y + 1, blockSize - 2, blockSize - 2); // The cell background
 
-          //          if (gameId >= 0) {
-          if (board[k] >= ALIVE) {
-            drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
-          } else {
-            if (k === playerMove) {
-              const playerNumber = parseInt(player.value);
-              drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
-            }
-            if (boardUpdated) {
-              if (k === playerHover) {
+          if (gameActive) {
+            if (board[k] >= ALIVE) {
+              drawPlayer(ctx, x, y, blockSize, board[k], GAME_COLORS[6]);
+            } else {
+              if (k === playerMove) {
                 const playerNumber = parseInt(player.value);
                 drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
               }
+              if (boardUpdated) {
+                if (k === playerHover) {
+                  const playerNumber = parseInt(player.value);
+                  drawPlayer(ctx, x, y, blockSize, playerNumber, GAME_COLORS[6]);
+                }
+              }
             }
           }
-          //          }
 
         }
       }
 
       // Draw win result line
-      //if (gameId >= 0)
       drawWinResult(ctx, result, GAME_COLORS[4], rowSize, colSize, blockSize);
 
     };
@@ -221,7 +240,7 @@ const CanvasComponent: React.FC = () => {
         return () => cancelAnimationFrame(animationFrameId);
       }
     }
-  }, [board, boardUpdated, result, boardBounds, playerHover, playerMove, player]);
+  }, [board, gameActive, boardUpdated, result, boardBounds, playerHover, playerMove, player]);
 
   const gameOption = (title: string, buttonText: string, change: boolean) => (
     <div className='panel ml-3'>

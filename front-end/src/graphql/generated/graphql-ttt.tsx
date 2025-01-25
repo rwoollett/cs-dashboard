@@ -39,6 +39,7 @@ export type Mutation = {
   createGame: Game;
   removeGameComplete: RemovalResult;
   serverUpdateBoard: Game;
+  startGame: Game;
 };
 
 
@@ -61,6 +62,11 @@ export type MutationRemoveGameCompleteArgs = {
 
 export type MutationServerUpdateBoardArgs = {
   board: Scalars['String']['input'];
+  gameId: Scalars['Int']['input'];
+};
+
+
+export type MutationStartGameArgs = {
   gameId: Scalars['Int']['input'];
 };
 
@@ -108,6 +114,13 @@ export type CreateGameMutationVariables = Exact<{
 
 
 export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number } };
+
+export type StartGameMutationVariables = Exact<{
+  gameId: Scalars['Int']['input'];
+}>;
+
+
+export type StartGameMutation = { __typename?: 'Mutation', startGame: { __typename?: 'Game', id: number, userId: number, board: string, createdAt: string } };
 
 export type BoardMoveMutationVariables = Exact<{
   gameId: Scalars['Int']['input'];
@@ -159,6 +172,42 @@ export function useCreateGameMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateGameMutationHookResult = ReturnType<typeof useCreateGameMutation>;
 export type CreateGameMutationResult = Apollo.MutationResult<CreateGameMutation>;
 export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMutation, CreateGameMutationVariables>;
+export const StartGameDocument = gql`
+    mutation StartGame($gameId: Int!) {
+  startGame(gameId: $gameId) {
+    id
+    userId
+    board
+    createdAt
+  }
+}
+    `;
+export type StartGameMutationFn = Apollo.MutationFunction<StartGameMutation, StartGameMutationVariables>;
+
+/**
+ * __useStartGameMutation__
+ *
+ * To run a mutation, you first call `useStartGameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useStartGameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [startGameMutation, { data, loading, error }] = useStartGameMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useStartGameMutation(baseOptions?: Apollo.MutationHookOptions<StartGameMutation, StartGameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<StartGameMutation, StartGameMutationVariables>(StartGameDocument, options);
+      }
+export type StartGameMutationHookResult = ReturnType<typeof useStartGameMutation>;
+export type StartGameMutationResult = Apollo.MutationResult<StartGameMutation>;
+export type StartGameMutationOptions = Apollo.BaseMutationOptions<StartGameMutation, StartGameMutationVariables>;
 export const BoardMoveDocument = gql`
     mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
   boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {

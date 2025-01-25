@@ -5,6 +5,15 @@ mutation CreateGame($userId: Int!) {
   }
 }
 
+mutation StartGame($gameId: Int!) {
+  startGame(gameId: $gameId) {
+    id
+    userId
+    board
+    createdAt
+  }
+}
+
 mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
   boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
     id
