@@ -18,9 +18,9 @@ const MainPanel: React.FC = () => {
         <div className="px-4 pb-6">
           <Dashboard />
         </div>
-        <div className="px-4 pb-6">
+        {/* <div className="px-4 pb-6">
           <CanvasGOL />
-        </div>
+        </div> */}
       </div>
     </section>);
 

@@ -1,16 +1,21 @@
 
-mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
-  createGame(player: $player, opponentStart: $opponentStart) {
+mutation CreateGame($userId: Int!) {
+  createGame(userId: $userId) {
     id
-    player
-    opponentStart
-    createdAt
-    allocated
   }
 }
 
-mutation BoardMove($gameId: Int!, $moveCell: Int!) {
-  boardMove(gameId: $gameId, moveCell: $moveCell) {
+mutation StartGame($gameId: Int!) {
+  startGame(gameId: $gameId) {
+    id
+    userId
+    board
+    createdAt
+  }
+}
+
+mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
+  boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
     id
     gameId
     moveCell

@@ -27,15 +27,10 @@ export type BoardOutput = {
 /** Tic Tac Toes game board. The player can play as Nought(1) or Cross(2). O is empty cell. */
 export type Game = {
   __typename?: 'Game';
-  /** When found with query getCreateGame as findFirst this is marked true. */
-  allocated: Scalars['Boolean']['output'];
   board: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   id: Scalars['Int']['output'];
-  opponentStart: Scalars['Boolean']['output'];
-  player: Scalars['Int']['output'];
-  /** The players moves made against oppenent */
-  playerMoves: Array<Maybe<PlayerMove>>;
+  userId: Scalars['Int']['output'];
 };
 
 export type Mutation = {
@@ -44,18 +39,19 @@ export type Mutation = {
   createGame: Game;
   removeGameComplete: RemovalResult;
   serverUpdateBoard: Game;
+  startGame: Game;
 };
 
 
 export type MutationBoardMoveArgs = {
   gameId: Scalars['Int']['input'];
   moveCell: Scalars['Int']['input'];
+  player: Scalars['Int']['input'];
 };
 
 
 export type MutationCreateGameArgs = {
-  opponentStart: Scalars['Boolean']['input'];
-  player: Scalars['Int']['input'];
+  userId: Scalars['Int']['input'];
 };
 
 
@@ -69,25 +65,26 @@ export type MutationServerUpdateBoardArgs = {
   gameId: Scalars['Int']['input'];
 };
 
+
+export type MutationStartGameArgs = {
+  gameId: Scalars['Int']['input'];
+};
+
 /** The players moves in the Tic Tac Toe board against oppenent. */
 export type PlayerMove = {
   __typename?: 'PlayerMove';
   /** When found with query getPlayerMove as findFirst this is marked true. */
   allocated: Scalars['Boolean']['output'];
+  game: Game;
   gameId: Scalars['Int']['output'];
   id: Scalars['Int']['output'];
   moveCell: Scalars['Int']['output'];
+  player: Scalars['Int']['output'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  getNewBoard?: Maybe<Array<Maybe<Game>>>;
   getPlayerMove?: Maybe<Array<Maybe<PlayerMove>>>;
-};
-
-
-export type QueryGetNewBoardArgs = {
-  nodeId: Scalars['String']['input'];
 };
 
 
@@ -112,15 +109,22 @@ export type SubscriptionGame_UpdateArgs = {
 };
 
 export type CreateGameMutationVariables = Exact<{
-  player: Scalars['Int']['input'];
-  opponentStart: Scalars['Boolean']['input'];
+  userId: Scalars['Int']['input'];
 }>;
 
 
-export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number, player: number, opponentStart: boolean, createdAt: string, allocated: boolean } };
+export type CreateGameMutation = { __typename?: 'Mutation', createGame: { __typename?: 'Game', id: number } };
+
+export type StartGameMutationVariables = Exact<{
+  gameId: Scalars['Int']['input'];
+}>;
+
+
+export type StartGameMutation = { __typename?: 'Mutation', startGame: { __typename?: 'Game', id: number, userId: number, board: string, createdAt: string } };
 
 export type BoardMoveMutationVariables = Exact<{
   gameId: Scalars['Int']['input'];
+  player: Scalars['Int']['input'];
   moveCell: Scalars['Int']['input'];
 }>;
 
@@ -136,13 +140,9 @@ export type GameUpdateByGameIdSubscription = { __typename?: 'Subscription', game
 
 
 export const CreateGameDocument = gql`
-    mutation CreateGame($player: Int!, $opponentStart: Boolean!) {
-  createGame(player: $player, opponentStart: $opponentStart) {
+    mutation CreateGame($userId: Int!) {
+  createGame(userId: $userId) {
     id
-    player
-    opponentStart
-    createdAt
-    allocated
   }
 }
     `;
@@ -161,8 +161,7 @@ export type CreateGameMutationFn = Apollo.MutationFunction<CreateGameMutation, C
  * @example
  * const [createGameMutation, { data, loading, error }] = useCreateGameMutation({
  *   variables: {
- *      player: // value for 'player'
- *      opponentStart: // value for 'opponentStart'
+ *      userId: // value for 'userId'
  *   },
  * });
  */
@@ -173,9 +172,45 @@ export function useCreateGameMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateGameMutationHookResult = ReturnType<typeof useCreateGameMutation>;
 export type CreateGameMutationResult = Apollo.MutationResult<CreateGameMutation>;
 export type CreateGameMutationOptions = Apollo.BaseMutationOptions<CreateGameMutation, CreateGameMutationVariables>;
+export const StartGameDocument = gql`
+    mutation StartGame($gameId: Int!) {
+  startGame(gameId: $gameId) {
+    id
+    userId
+    board
+    createdAt
+  }
+}
+    `;
+export type StartGameMutationFn = Apollo.MutationFunction<StartGameMutation, StartGameMutationVariables>;
+
+/**
+ * __useStartGameMutation__
+ *
+ * To run a mutation, you first call `useStartGameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useStartGameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [startGameMutation, { data, loading, error }] = useStartGameMutation({
+ *   variables: {
+ *      gameId: // value for 'gameId'
+ *   },
+ * });
+ */
+export function useStartGameMutation(baseOptions?: Apollo.MutationHookOptions<StartGameMutation, StartGameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<StartGameMutation, StartGameMutationVariables>(StartGameDocument, options);
+      }
+export type StartGameMutationHookResult = ReturnType<typeof useStartGameMutation>;
+export type StartGameMutationResult = Apollo.MutationResult<StartGameMutation>;
+export type StartGameMutationOptions = Apollo.BaseMutationOptions<StartGameMutation, StartGameMutationVariables>;
 export const BoardMoveDocument = gql`
-    mutation BoardMove($gameId: Int!, $moveCell: Int!) {
-  boardMove(gameId: $gameId, moveCell: $moveCell) {
+    mutation BoardMove($gameId: Int!, $player: Int!, $moveCell: Int!) {
+  boardMove(gameId: $gameId, player: $player, moveCell: $moveCell) {
     id
     gameId
     moveCell
@@ -199,6 +234,7 @@ export type BoardMoveMutationFn = Apollo.MutationFunction<BoardMoveMutation, Boa
  * const [boardMoveMutation, { data, loading, error }] = useBoardMoveMutation({
  *   variables: {
  *      gameId: // value for 'gameId'
+ *      player: // value for 'player'
  *      moveCell: // value for 'moveCell'
  *   },
  * });
