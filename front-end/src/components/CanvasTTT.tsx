@@ -114,6 +114,17 @@ const CanvasComponent: React.FC = () => {
         setPlayMessage("Your turn.");
         const newBoard = data.data.game_Update?.board.split(",");
         setBoard(newBoard.map((cell) => parseInt(cell)));
+        if (data.data.game_Update?.result.indexOf(':') > 0) {
+          const msgResult = data.data.game_Update?.result.split(":");
+          // A result is found
+          if (msgResult.length === 2 && msgResult[1].indexOf(',') > 0) {
+            setPlayMessage(msgResult[0]);
+            setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
+          } else {
+            setPlayMessage(data.data.game_Update?.result);
+          }
+        }
+
         setPlayerMove(-1);
         setBoardUpdated(true);
         setHasMovedBoard(false);

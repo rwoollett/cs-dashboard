@@ -22,6 +22,7 @@ export type BoardOutput = {
   __typename?: 'BoardOutput';
   board: Scalars['String']['output'];
   gameId: Scalars['Int']['output'];
+  result: Scalars['String']['output'];
 };
 
 /** Tic Tac Toes game board. The player can play as Nought(1) or Cross(2). O is empty cell. */
@@ -64,6 +65,7 @@ export type MutationRemoveGameCompleteArgs = {
 export type MutationServerUpdateBoardArgs = {
   board: Scalars['String']['input'];
   gameId: Scalars['Int']['input'];
+  result: Scalars['String']['input'];
 };
 
 
@@ -139,7 +141,7 @@ export type GameUpdateByGameIdSubscriptionVariables = Exact<{
 }>;
 
 
-export type GameUpdateByGameIdSubscription = { __typename?: 'Subscription', game_Update?: { __typename?: 'BoardOutput', board: string, gameId: number } | null };
+export type GameUpdateByGameIdSubscription = { __typename?: 'Subscription', game_Update?: { __typename?: 'BoardOutput', board: string, gameId: number, result: string } | null };
 
 
 export const CreateGameDocument = gql`
@@ -262,6 +264,7 @@ export const GameUpdateByGameIdDocument = gql`
   game_Update(gameId: $gameId) {
     board
     gameId
+    result
   }
 }
     `;

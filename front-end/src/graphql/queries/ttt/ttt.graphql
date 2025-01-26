@@ -29,5 +29,6 @@ subscription GameUpdateByGameId($gameId: Int!) {
   game_Update(gameId: $gameId) {
     board
     gameId
+    result
   }
 }
