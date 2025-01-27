@@ -110,18 +110,21 @@ const CanvasComponent: React.FC = () => {
     skip: gameId === -1,
     onData({ data }) {
       if (data.data?.game_Update) {
-        console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.gameId);
-        setPlayMessage("Your turn.");
+        console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.result, data.data.game_Update.gameId);
         const newBoard = data.data.game_Update?.board.split(",");
         setBoard(newBoard.map((cell) => parseInt(cell)));
+        setPlayMessage("Your turn.");
         if (data.data.game_Update?.result.indexOf(':') > 0) {
           const msgResult = data.data.game_Update?.result.split(":");
-          // A result is found
+          // A result is found when sum of result string > 0 (or equal 3)
           if (msgResult.length === 2 && msgResult[1].indexOf(',') > 0) {
-            setPlayMessage(msgResult[0]);
-            setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
-          } else {
-            setPlayMessage(data.data.game_Update?.result);
+            console.log('sum of result ', msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0));
+            if (msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0) > 0) {
+              setPlayMessage(msgResult[0]);
+              setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
+            } else {
+              setPlayMessage(msgResult[0]);  // draw
+            }
           }
         }
 
