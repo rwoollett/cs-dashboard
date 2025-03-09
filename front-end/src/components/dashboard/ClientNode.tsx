@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Client, useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
 import { parseISO, format } from 'date-fns';
-import { now } from "lodash";
 
 type ClientNodeProps = {
   client: Client;
