@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Client, useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
 import { parseISO, format } from 'date-fns';
+import { now } from "lodash";
 
 type ClientNodeProps = {
   client: Client;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
-  // console.log('client',client);
+  // console.log('client',client,  format(new Date(), 'P p'));
   const { data } = useConnectClientSubscription({
     variables: { sourceIp: client.ip }
   });
@@ -15,7 +16,7 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
   });
   const [connected, setConnected] = useState<boolean>(client.connected);
   const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
-  const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt);
+  const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt ||  new Date().toISOString());
 
   useEffect(() => {
     if (data?.clientCS_Connected) {
