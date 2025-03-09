@@ -6,6 +6,7 @@ type ClientNodeProps = {
   client: Client;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
+  // console.log('client',client);
   const { data } = useConnectClientSubscription({
     variables: { sourceIp: client.ip }
   });

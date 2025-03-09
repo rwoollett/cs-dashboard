@@ -80,7 +80,7 @@ const CanvasComponent: React.FC = () => {
 
   useEffect(() => {
     if (createGameData) {
-      console.log(createGameData.createGame);
+      // console.log(createGameData.createGame);
       setGameId(createGameData.createGame.id);
     }
   }, [createGameData]);
