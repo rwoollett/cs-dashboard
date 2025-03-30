@@ -1,8 +1,8 @@
 import React from "react";
 import NetworkList from "./NetworkList";
 import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
-//import ClientToken from "./ClientToken";
-//import { ActionByIp } from "../../types";
+import ClientToken from "./ClientToken";
+import { ActionByIp } from "../../types";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -16,23 +16,23 @@ const Dashboard: React.FC = () => {
   });
 
   let networkContent = null;
-//  let clientContent = null;
+  let clientContent = null;
   if (loading) {
     networkContent = (<div><p>Loading...</p></div>)
-//    clientContent = (<div><p>Loading...</p></div>)
+    clientContent = (<div><p>Loading...</p></div>)
   } else if (data) {
     networkContent = (<NetworkList
       clientList={data.getClients as Client[]}
       range={range} />);
-    // clientContent = (<ClientToken
-    //   range={range}
-    //   clientsByIp={(data.getClients as Client[]).reduce((prev: ActionByIp, client) => {
-    //     prev[client.ip] = { client, actions: [] };
-    //     return prev;
-    //   }, {})} />);
+    clientContent = (<ClientToken
+      range={range}
+      clientsByIp={(data.getClients as Client[]).reduce((prev: ActionByIp, client) => {
+        prev[client.ip] = { client, actions: [] };
+        return prev;
+      }, {})} />);
   } else {
     networkContent = (<div><p>No network clients found.</p></div>)
-//    clientContent = (<div><p>No network clients found.</p></div>)
+    clientContent = (<div><p>No network clients found.</p></div>)
   }
 
   return (
@@ -40,9 +40,9 @@ const Dashboard: React.FC = () => {
       <div className="column is-full">
         {networkContent}
       </div>
-      {/* <div className="column is-full">
+      <div className="column is-full">
         {clientContent}
-      </div> */}
+      </div>
       {/* <div className="column">
         <div className="fixed-grid has-3-cols has-1-cols-mobile">
           <div className="grid is-gap-2">

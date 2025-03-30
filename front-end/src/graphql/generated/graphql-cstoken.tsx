@@ -31,6 +31,7 @@ export type Client = {
   connected: Scalars['Boolean']['output'];
   connectedAt: Scalars['String']['output'];
   disconnectedAt: Scalars['String']['output'];
+  host: Scalars['String']['output'];
   id: Scalars['Int']['output'];
   ip: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -78,6 +79,7 @@ export type MutationCreateAcquireCsArgs = {
 
 export type MutationCreateClientArgs = {
   connected: Scalars['Boolean']['input'];
+  host: Scalars['String']['input'];
   ip: Scalars['String']['input'];
   name: Scalars['String']['input'];
 };

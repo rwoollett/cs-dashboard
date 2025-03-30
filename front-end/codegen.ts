@@ -1,7 +1,10 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
 import dotenv from 'dotenv';
+import dotenvexpand from 'dotenv-expand'
 
-dotenv.config();
+const appEnv = dotenv.config();
+dotenvexpand(appEnv);
+
 
 const config: CodegenConfig = {
   overwrite: true,
