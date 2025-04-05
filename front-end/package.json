@@ -29,7 +29,7 @@
     "eject": "react-scripts eject",
     "codegen": "graphql-codegen"
   },
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3000",
   "eslintConfig": {
     "extends": [
       "react-app",

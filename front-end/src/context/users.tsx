@@ -21,17 +21,17 @@ export interface Shared {
   signOut: () => Promise<void>;
   //  notifications: NotifyItem[];
   //  createNotification: (color: string, autoClose: boolean, message: string) => void;
-//  info: (message: string,  autoClose: boolean, link?: NotifiyLink) => void;
-//  success: (message: string, autoClose: boolean) => void;
-//  warning: (message: string, autoClose: boolean) => void;
-//  error: (message: string, autoClose: boolean) => void;
- // handleShowNotificationsClick: (isShown: boolean) => void;
+  //  info: (message: string,  autoClose: boolean, link?: NotifiyLink) => void;
+  //  success: (message: string, autoClose: boolean) => void;
+  //  warning: (message: string, autoClose: boolean) => void;
+  //  error: (message: string, autoClose: boolean) => void;
+  // handleShowNotificationsClick: (isShown: boolean) => void;
 };
 
 const defaultShared: Shared = {
   user: undefined,
   token: null,
-  setToken: (_:string | null) => { },
+  setToken: (_: string | null) => { },
   isAuthenticated: async () => Promise.resolve({
     isLoggedIn: false,
     userId: undefined,
@@ -40,12 +40,12 @@ const defaultShared: Shared = {
   signIn: async (_: SignInUser) => { },
   signOut: async () => { },
   //  notifications: [],
-//  createNotification: (color: string, autoClose: boolean, message: string) => { },
-//  info: (message: string,  autoClose: boolean, link?: NotifiyLink) => { },
- // success: (message: string, autoClose: boolean) => { },
-//  warning: (message: string, autoClose: boolean) => { },
-//  error: (message: string, autoClose: boolean) => { },
-//  handleShowNotificationsClick: (isShown: boolean) => { }
+  //  createNotification: (color: string, autoClose: boolean, message: string) => { },
+  //  info: (message: string,  autoClose: boolean, link?: NotifiyLink) => { },
+  // success: (message: string, autoClose: boolean) => { },
+  //  warning: (message: string, autoClose: boolean) => { },
+  //  error: (message: string, autoClose: boolean) => { },
+  //  handleShowNotificationsClick: (isShown: boolean) => { }
 };
 
 const UsersContext = createContext<Shared>(defaultShared);
@@ -53,13 +53,18 @@ const UsersContext = createContext<Shared>(defaultShared);
 function UsersProvider({ children }: { children: JSX.Element }) {
   const [user, setUser] = useState<User>();
   const [token, setToken] = useState<string | null>(null);
-//  const [notifications, setNotifications] = useState<NotifyItem[]>([]);
-//  const [showNotifications, setShowNotifications] = useState(true);
+  //  const [notifications, setNotifications] = useState<NotifyItem[]>([]);
+  //  const [showNotifications, setShowNotifications] = useState(true);
+  const authServiceUrl = `${process.env.REACT_APP_AUTH_SERVER_URL}`;
 
+  console.log('currentuser', `${authServiceUrl}/api/users/currentuser`)
   const isAuthenticated = useCallback(async () => {
-    const { data } = await axios.get<CurrentUser>('/api/users/currentuser');
+    const { data } = await axios.get<CurrentUser>(
+      `${authServiceUrl}/api/users/currentuser`,
+    { withCredentials: true });
     const isLoggedIn = data?.currentUser ? true : false
     if (isLoggedIn) {
+      console.log('is logged', `${authServiceUrl}/api/users/currentuser`)
       setUser({
         email: data?.currentUser?.email as string,
         id: data?.currentUser?.id as string,
@@ -67,20 +72,23 @@ function UsersProvider({ children }: { children: JSX.Element }) {
         password: ""
       })
     } else {
+      console.log('is undefiend logged', `${authServiceUrl}/api/users/currentuser`)
       setUser(undefined);
     }
     return {
       isLoggedIn: data?.currentUser ? true : false,
-      userId: data?.currentUser?.id,
-      email: data?.currentUser?.email
+      userId: data?.currentUser?.id as string,
+      email: data?.currentUser?.email as string
     };
 
   }, []);
 
   const signIn = async ({ email, password }: SignInUser) => {
-    const response = await axios.post<User>('/api/users/signin', {
-      email, password
-    });
+    const response = await axios.post<User>(`${authServiceUrl}/api/users/signin`,
+      { email, password },
+      { withCredentials: true }
+    );
+    console.log('re', response);
     setUser({
       ...response.data,
       name: response.data.email
@@ -88,13 +96,16 @@ function UsersProvider({ children }: { children: JSX.Element }) {
   };
 
   const signOut = async () => {
-    await axios.post('/api/users/signout');
+    await axios.post(`${authServiceUrl}/api/users/signout`,
+      {},
+      { withCredentials: true }
+    );
     setUser(undefined);
   };
 
-//  const handleShowNotificationsClick = (isShown: boolean) => {
-//    setShowNotifications(isShown);
-//  };
+  //  const handleShowNotificationsClick = (isShown: boolean) => {
+  //    setShowNotifications(isShown);
+  //  };
 
   // const createNotification = useCallback((
   //   color: string,
@@ -162,13 +173,13 @@ function UsersProvider({ children }: { children: JSX.Element }) {
     user,
     token,
     setToken,
-//    notifications,
+    //    notifications,
     isAuthenticated,
     signIn,
     signOut,
-//    createNotification,
-//    info, success, warning, error,
- //   handleShowNotificationsClick
+    //    createNotification,
+    //    info, success, warning, error,
+    //   handleShowNotificationsClick
   };
 
   return (<UsersContext.Provider value={valueToShare}>

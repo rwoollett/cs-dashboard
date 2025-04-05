@@ -3,12 +3,23 @@ import NetworkList from "./NetworkList";
 import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
 import ClientToken from "./ClientToken";
 import { ActionByIp } from "../../types";
+import SignIn from "./Signin";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
  * 
  */
-const Dashboard: React.FC = () => {
+
+/**
+ * Network list.  
+ * Show all network node clients in the range of ports network
+ * 
+ */
+type DashboardProps = {
+  isAuthenticated: boolean;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
 
   const range = { from: 5010, to: 5080 };
   const { data, loading } = useGetClientsQuery({
@@ -35,8 +46,9 @@ const Dashboard: React.FC = () => {
     clientContent = (<div><p>No network clients found.</p></div>)
   }
 
-  return (
-    <div className="columns is-multiline">
+  let dashboardContent = null;
+  if (isAuthenticated) {
+    dashboardContent = (<>
       <div className="column is-full">
         {networkContent}
       </div>
@@ -44,17 +56,29 @@ const Dashboard: React.FC = () => {
         {clientContent}
       </div>
       {/* <div className="column">
-        <div className="fixed-grid has-3-cols has-1-cols-mobile">
-          <div className="grid is-gap-2">
-            <div className="cell">
-              <RequestToken />
-            </div>
-            <div className="cell">
-              <AcquireToken />
-            </div>
+      <div className="fixed-grid has-3-cols has-1-cols-mobile">
+        <div className="grid is-gap-2">
+          <div className="cell">
+            <RequestToken />
+          </div>
+          <div className="cell">
+            <AcquireToken />
           </div>
         </div>
-      </div> */}
+      </div>
+      </div>*/}
+    </>
+    );
+  } else {
+    dashboardContent = (
+      <div>
+        <SignIn />
+      </div>
+    )
+  }
+  return (
+    <div className="columns is-multiline">
+      {dashboardContent}
     </div>
   );
 
