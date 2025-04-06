@@ -1,6 +1,5 @@
-import React, { ChangeEvent, FormEvent, ReactElement, useEffect, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import StatusAlert, { StatusErrors } from '../../components/StatusAlert';
-import style from '../../components/SignIn.module.scss';
 import useUsersContext from '../../hooks/use-users-context';
 
 const SignIn: React.FC = () => {
@@ -10,22 +9,11 @@ const SignIn: React.FC = () => {
   const [isValidForm, setIsValidForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string[]>([]);
   const [errors, setErrors] = useState<JSX.Element | null>(null);
-  const { isAuthenticated, user, signIn } = useUsersContext();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const { userId, email, isLoggedIn: asIsLogged } = await isAuthenticated();
-      setIsLoggedIn(asIsLogged);
-    })();
-  }, [isLoggedIn, isAuthenticated]);
+  const { user, signIn } = useUsersContext();
 
   const onHandleReset = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage([]);
-    const value = await isAuthenticated();
-    console.log('isAur', value);
-
   };
 
   const onHandleLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -43,6 +31,7 @@ const SignIn: React.FC = () => {
       setName("");
       setPassword("");
     } catch (error) {
+      console.log('axios error ',error);
       const statusErrors = error as Partial<StatusErrors>;
       setErrors(<StatusAlert statusErrors={statusErrors} />);
 
@@ -107,8 +96,8 @@ const SignIn: React.FC = () => {
           </div>
 
           <div className='block'>
+            {errors}
             {farewell}
-            {isLoggedIn} <br />
             {user && JSON.stringify(user)}
           </div>
         </form>

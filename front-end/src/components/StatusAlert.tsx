@@ -3,6 +3,7 @@ import style from './StatusAlert.module.css';
 
 export type StatusError = {
   message: string;
+  field: string;
 }
 
 export interface StatusErrors {
@@ -22,12 +23,11 @@ const StatusAlert = ({ statusErrors, className }: StatusAlertProps & HTMLAttribu
   if (className) {
     outerClassNames += ' ' + className;
   } 
-  console.log(JSON.stringify(statusErrors));
   return (
     <div className={outerClassNames}>
       <ul>
         {statusErrors.data && statusErrors.data.errors.map(err => (
-          <li key={err.message}>{err.message}</li>
+          <li key={err.field}>{err.message}</li>
         ))}
         {statusErrors.status && <li key={statusErrors.status}>{statusErrors.error}</li>}
       </ul>

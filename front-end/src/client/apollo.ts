@@ -10,12 +10,12 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities'
 
 //const getToken = () => localStorage.getItem('jwtToken'); // Replace with your token retrieval logic
-const getToken = (token: string | null) => {
-  return token; // Retrieve the token from the context
-};
+// const getToken = (token: string | null) => {
+//   return token; // Retrieve the token from the context
+// };
 
 function createApolloClient(token: string | null) {
-
+  console.log('creste apollo context', token);
   const authLink = setContext((_, { headers }) => {
     return {
       headers: {
@@ -115,5 +115,5 @@ function createApolloClient(token: string | null) {
   })
 }
 
-export { getToken };
+//export { getToken };
 export default createApolloClient;

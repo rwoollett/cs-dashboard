@@ -4,6 +4,8 @@ import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-csto
 import ClientToken from "./ClientToken";
 import { ActionByIp } from "../../types";
 import SignIn from "./Signin";
+import useUsersContext from "../../hooks/use-users-context";
+import { User } from "../../context/User";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -15,12 +17,13 @@ import SignIn from "./Signin";
  * Show all network node clients in the range of ports network
  * 
  */
-type DashboardProps = {
-  isAuthenticated: boolean;
-}
+// type DashboardProps = {
+//   hasAuthenticated: boolean;
+// }
 
-const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
-
+const Dashboard: React.FC = () => {
+  const { user, signOut } = useUsersContext();
+  console.log('Dashboard componnet', user);
   const range = { from: 5010, to: 5080 };
   const { data, loading } = useGetClientsQuery({
     variables: { range },
@@ -47,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
   }
 
   let dashboardContent = null;
-  if (isAuthenticated) {
+  if (user) {
     dashboardContent = (<>
       <div className="column is-full">
         {networkContent}
@@ -67,6 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
         </div>
       </div>
       </div>*/}
+
     </>
     );
   } else {
@@ -78,6 +82,19 @@ const Dashboard: React.FC<DashboardProps> = ({ isAuthenticated }) => {
   }
   return (
     <div className="columns is-multiline">
+      {user && (
+        <>
+          <span className="has-background-info-light">
+            Welcome, <b>{user && (user as User).name}</b>!
+          </span>
+          <div className="field">
+            <div className="control">
+              <button type="button" className="button is-link" onClick={signOut}>Log out</button>
+            </div>
+          </div>
+        </>
+      )}
+
       {dashboardContent}
     </div>
   );
