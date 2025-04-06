@@ -14,6 +14,7 @@ const SignIn: React.FC = () => {
   const onHandleReset = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage([]);
+    setErrors(null);
   };
 
   const onHandleLogin = async (event: FormEvent<HTMLFormElement>) => {
@@ -31,10 +32,8 @@ const SignIn: React.FC = () => {
       setName("");
       setPassword("");
     } catch (error) {
-      console.log('axios error ',error);
       const statusErrors = error as Partial<StatusErrors>;
       setErrors(<StatusAlert statusErrors={statusErrors} />);
-
     }
 
     setErrorMessage(errorMessage);
@@ -53,7 +52,7 @@ const SignIn: React.FC = () => {
 
   return (
     <div className='panel ml-3'>
-      <p className="panel-heading mb-4 is-size-7">Login</p>
+      <p className="panel-heading mb-4 is-size-5">Network Login </p>
       <div className='panel-block'>
 
         <form onReset={onHandleReset} onSubmit={onHandleLogin}>
@@ -84,23 +83,24 @@ const SignIn: React.FC = () => {
             </div>
           </div>
 
-          <div className="field">
-            <div className="control">
-              <button type="submit" className="button is-link">Login</button>
+          <div className='columns'>
+            <div className="field column">
+              <div className="control">
+                <button type="submit" className="button is-link">Login</button>
+              </div>
             </div>
-          </div>
-          <div className="field">
-            <div className="control">
-              <button type="reset" className="button is-link">Reset</button>
+            <div className="field column">
+              <div className="control">
+                <button type="reset" className="button is-link">Reset</button>
+              </div>
             </div>
-          </div>
-
-          <div className='block'>
-            {errors}
-            {farewell}
-            {user && JSON.stringify(user)}
           </div>
         </form>
+      </div>
+      <div className='panel-block'>
+        {errors}
+        {farewell}
+        {user && JSON.stringify(user)}
       </div>
     </div>
   )

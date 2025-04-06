@@ -23,7 +23,6 @@ import { User } from "../../context/User";
 
 const Dashboard: React.FC = () => {
   const { user, signOut } = useUsersContext();
-  console.log('Dashboard componnet', user);
   const range = { from: 5010, to: 5080 };
   const { data, loading } = useGetClientsQuery({
     variables: { range },
@@ -82,7 +81,7 @@ const Dashboard: React.FC = () => {
   }
   return (
     <div className="columns is-multiline">
-      {user && (
+      {/* {user && (
         <>
           <span className="has-background-info-light">
             Welcome, <b>{user && (user as User).name}</b>!
@@ -94,7 +93,7 @@ const Dashboard: React.FC = () => {
           </div>
         </>
       )}
-
+ */}
       {dashboardContent}
     </div>
   );

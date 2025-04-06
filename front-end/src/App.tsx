@@ -4,6 +4,8 @@ import { ApolloProvider } from '@apollo/client';
 import createApolloClient from './client/apollo';
 import { UsersProvider } from './context/users';
 import useUsersContext from './hooks/use-users-context';
+import { User } from './context/User';
+import Header from './components/Header';
 
 
 const ApolloClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -12,21 +14,19 @@ const ApolloClientProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
 };
 
-function App() {
+const App: React.FC = () => {
+//function App() {
+  const { user, signOut } = useUsersContext();
+
   return (
     <UsersProvider>
       <ApolloClientProvider>
         <section className="section">
           <div className="pt-0 container">
-            <header>
-              <h1 className="title">
-                Network with NMToken Dashboard
-              </h1>
-            </header>
+            <Header />
             {/* <p>{!data ? "Loading..." : data}</p> */}
             <MainPanel />
           </div>
-
         </section >
       </ApolloClientProvider>
     </UsersProvider>
