@@ -4,7 +4,6 @@ import { ApolloProvider } from '@apollo/client';
 import createApolloClient from './client/apollo';
 import { UsersProvider } from './context/users';
 import useUsersContext from './hooks/use-users-context';
-import { User } from './context/User';
 import Header from './components/Header';
 
 
@@ -15,8 +14,6 @@ const ApolloClientProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 const App: React.FC = () => {
-//function App() {
-  const { user, signOut } = useUsersContext();
 
   return (
     <UsersProvider>
