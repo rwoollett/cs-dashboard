@@ -5,7 +5,6 @@ import ClientToken from "./ClientToken";
 import { ActionByIp } from "../../types";
 import SignIn from "./Signin";
 import useUsersContext from "../../hooks/use-users-context";
-import { User } from "../../context/User";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -22,7 +21,7 @@ import { User } from "../../context/User";
 // }
 
 const Dashboard: React.FC = () => {
-  const { user, signOut } = useUsersContext();
+  const { user } = useUsersContext();
   const range = { from: 5010, to: 5080 };
   const { data, loading } = useGetClientsQuery({
     variables: { range },
@@ -81,19 +80,6 @@ const Dashboard: React.FC = () => {
   }
   return (
     <div className="columns is-multiline">
-      {/* {user && (
-        <>
-          <span className="has-background-info-light">
-            Welcome, <b>{user && (user as User).name}</b>!
-          </span>
-          <div className="field">
-            <div className="control">
-              <button type="button" className="button is-link" onClick={signOut}>Log out</button>
-            </div>
-          </div>
-        </>
-      )}
- */}
       {dashboardContent}
     </div>
   );
