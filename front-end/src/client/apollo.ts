@@ -15,8 +15,9 @@ import { getMainDefinition } from '@apollo/client/utilities'
 // };
 
 function createApolloClient(token: string | null) {
-  console.log('creste apollo context', token);
+  console.log('create apollo context', token);
   const authLink = setContext((_, { headers }) => {
+    // req.currentUser = "hello"; // Removed or commented out as 'req' is not defined
     return {
       headers: {
         ...headers,
@@ -42,7 +43,8 @@ function createApolloClient(token: string | null) {
     authLink,
     new HttpLink({
       uri: `${process.env.REACT_APP_CSTOKEN_APOLLO_SERVER_URL}/graphql`, // Server URL (must be absolute)
-      credentials: 'same-origin', // Additional fetch() options like `credentials` or `headers`
+      credentials: 'same-origin', 
+      //credentials: 'include',
     }),
   ]);
 

@@ -8,8 +8,23 @@ import Header from './components/Header';
 
 
 const ApolloClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { token } = useUsersContext();
-  const client = createApolloClient(token); // Pass the token to the Apollo Client
+  const { getToken } = useUsersContext();
+  const [client, setClient] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const initializeClient = async () => {
+      const token = await getToken();
+      console.log('clientProvider token', token);
+      const apolloClient = createApolloClient(token); // Pass the token to the Apollo Client
+      setClient(apolloClient);
+    };
+    initializeClient();
+  }, [getToken]);
+
+  if (!client) {
+    return <div>Loading...</div>; // Render a loading state while the client is being initialized
+  }
+
   return <ApolloProvider client={client}>{children}</ApolloProvider>;
 };
 
