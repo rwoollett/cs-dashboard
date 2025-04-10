@@ -20,7 +20,6 @@ const UsersContext = createContext<Shared>(defaultShared);
 
 function UsersProvider({ children }: { children: JSX.Element }) {
   const [user, setUser] = useState<User | null>(null);
-  //const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const authServiceUrl = `${process.env.REACT_APP_AUTH_SERVER_URL}`;
 
   const signIn = async ({ email, password }: SignInUser) => {
@@ -29,12 +28,10 @@ function UsersProvider({ children }: { children: JSX.Element }) {
         { email, password },
         { withCredentials: true }
       );
-      console.log('signin res', response);
       setUser({
         ...response.data,
         name: response.data.email
       });
-      //setIsSignedIn(true);
     } catch (error: any) {
       if (error.response) {
         // The request was made, and the server responded with a status code
@@ -59,17 +56,14 @@ function UsersProvider({ children }: { children: JSX.Element }) {
       const currentToken = await axios.get(`${authServiceUrl}/api/users/currenttoken`,
         { withCredentials: true }
       );
-      console.log ('user', user, 'token', currentToken.data.currentToken);
       if (!user && currentToken.data.currentToken != null) {
         const currentUser = await axios.get(`${authServiceUrl}/api/users/currentuser`,
           { withCredentials: true }
         );
-        console.log('gttoken',currentUser.data.currentUser);
         setUser({
           ...currentUser.data.currentUser,
           name: currentUser.data.currentUser.email
         });
-        //setIsSignedIn(true);
       }
       return currentToken.data.currentToken;
     } catch (error: any) {
@@ -97,7 +91,6 @@ function UsersProvider({ children }: { children: JSX.Element }) {
       { withCredentials: true }
     );
     setUser(null);
-    //setIsSignedIn(false);
   };
 
   const valueToShare: Shared = {

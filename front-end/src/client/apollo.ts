@@ -15,9 +15,7 @@ import { getMainDefinition } from '@apollo/client/utilities'
 // };
 
 function createApolloClient(token: string | null) {
-  console.log('create apollo context', token);
   const authLink = setContext((_, { headers }) => {
-    // req.currentUser = "hello"; // Removed or commented out as 'req' is not defined
     return {
       headers: {
         ...headers,

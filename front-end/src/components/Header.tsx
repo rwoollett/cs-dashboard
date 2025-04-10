@@ -5,7 +5,6 @@ import { User } from '../context/User';
 const Header: React.FC = () => {
   const { user, signOut } = useUsersContext();
 
-  console.log('header', user);
   return (
     <header>
       <h1 className="title">
