@@ -87,7 +87,6 @@ const CanvasComponent: React.FC = () => {
 
   useEffect(() => {
     if (startGameData) {
-      console.log(startGameData.startGame);
       setBoard(() => {
         let newBoard: number[] = startGameData.startGame.board.split(",").map((cell) => parseInt(cell));
         return newBoard;
@@ -98,7 +97,6 @@ const CanvasComponent: React.FC = () => {
 
   useEffect(() => {
     if (boardMoveData) {
-      console.log(boardMoveData.boardMove);
       setHasMovedBoard(true);
     }
   }, [boardMoveData]);

@@ -70,7 +70,8 @@ const SignIn: React.FC = () => {
             <div className="control">
               <input value={name}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
-                className={`uk-input ${name === '' && errorMessage.length && 'uk-alert-danger'}`} type="text" placeholder="e.g Alex Smith" />
+                className={`uk-input ${name === '' && errorMessage.length && 'uk-alert-danger'}`} type="text" placeholder="e.g Alex Smith" 
+                autoComplete="username"/>
             </div>
           </div>
 
@@ -79,7 +80,8 @@ const SignIn: React.FC = () => {
             <div className="control">
               <input value={password}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)}
-                className={`uk-input ${password === '' && errorMessage.length && 'uk-alert-danger'}`} type="password" placeholder="password" />
+                className={`uk-input ${password === '' && errorMessage.length && 'uk-alert-danger'}`} type="password" placeholder="password"
+                autoComplete="current-password" />
             </div>
           </div>
 
