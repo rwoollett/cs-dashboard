@@ -7,4 +7,14 @@ export type TokenAction = {
   action: AcquireCs | RequestCs;
 }
 
+export interface Notification {
+  id: string;
+  name: string;
+  date: string;
+  user: string;
+  message: string;
+  isNew: boolean;
+  read: boolean;
+}
+
 export type ActionByIp = Record<string, { client: Client; actions: TokenAction[]; }>;

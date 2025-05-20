@@ -1,11 +1,15 @@
 // server/index.js
-
+import http from 'http';
 import path from 'path';
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
-
+import * as ws from 'ws';
+import {
+  handleMessage, handleDisconnect,
+  wss, userFromUrl, registerUser
+} from './wss';
 
 dotenv.config();
 
@@ -48,10 +52,45 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
 });
 
+server.on('upgrade', async (req, socket, head) => {
+  try {
+    wss.handleUpgrade(req, socket, head, (ws: ws.WebSocket) => {
+      // Do something before firing the connected event
+
+      wss.emit('connection', ws, req)
+    })
+  } catch (err) {
+    // Socket uprade failed
+    // Close socket and clean
+    console.log('Socket upgrade failed', err)
+    socket.destroy();
+    throw new Error(`Socket upgrade failed: ${err}`);
+  }
+});
+
+wss.on('connection', (ws: ws.WebSocket, req: http.IncomingMessage) => {
+  if (req.url) {
+    const user = userFromUrl(req.url);
+    if (user) {
+      registerUser({ userId: user, client: ws });
+
+      ws.on('message', (message: ws.RawData) => handleMessage(message));
+
+      // User disconnected
+      ws.on('close', () => handleDisconnect(user, ws));
+
+    } else {
+      ws.close(); // require url user
+    }
+  } else {
+    ws.close();
+  }
+
+});
 // ///////
 // const ls = spawn('./nm_go.sh', [], {
 //   cwd: '../../netprocessor'
