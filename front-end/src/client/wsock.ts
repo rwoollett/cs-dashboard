@@ -21,7 +21,7 @@ const websockets = {
 };
 
 const wsUrl = () => {
-  return `${websockets.url}:3000`;
+  return `${websockets.url}:3003`;
 }
 
 const websocketClient = <T>(

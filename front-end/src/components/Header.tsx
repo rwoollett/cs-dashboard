@@ -10,7 +10,7 @@ const Header: React.FC = () => {
   const [connected, setConnected] = useState(false);
   const [received, setReceived] = useState<Notification[]>([]);
 
-  const latestTimestamp = '';
+  const latestTimestamp = 'something';
 
   const handleSendMessage = () => {
     const { payload } = { payload: latestTimestamp };

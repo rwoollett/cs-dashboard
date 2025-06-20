@@ -22,7 +22,7 @@ import useUsersContext from "../../hooks/use-users-context";
 
 const Dashboard: React.FC = () => {
   const { user } = useUsersContext();
-  const range = { from: 5010, to: 5080 };
+  const range = { from: 5010, to: 8080 };
   const { data, loading } = useGetClientsQuery({
     variables: { range },
   });
