@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NetworkList from "./NetworkList";
-import { Client, useGetClientsQuery } from "../../graphql/generated/graphql-cstoken";
+import { ClientCS } from "../../types";
 import ClientToken from "./ClientToken";
 import { ActionByIp } from "../../types";
 import SignIn from "./Signin";
@@ -16,16 +16,31 @@ import useUsersContext from "../../hooks/use-users-context";
  * Show all network node clients in the range of ports network
  * 
  */
-// type DashboardProps = {
-//   hasAuthenticated: boolean;
-// }
 
 const Dashboard: React.FC = () => {
   const { user } = useUsersContext();
-  const range = { from: 5010, to: 8080 };
-  const { data, loading } = useGetClientsQuery({
-    variables: { range },
-  });
+  const range = { from: 7010, to: 7040 };
+
+  const [data, setData] = useState<{ getClients: ClientCS[] } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`http://localhost:3003/api/v1/clients/range/${range.from}/${range.to}`)
+      .then(res => res.json())
+      .then(json => {
+        console.log("Fetched clients:", json);
+        if (!json || !Array.isArray(json.getClients)) {
+          throw new Error("Invalid response format");
+        }
+        setData({ getClients: json.getClients });
+        setLoading(false);
+      })
+      .catch(() => {
+        setData(null);
+        setLoading(false);
+      });
+  }, [range.from, range.to]);
 
   let networkContent = null;
   let clientContent = null;
@@ -34,11 +49,11 @@ const Dashboard: React.FC = () => {
     clientContent = (<div><p>Loading...</p></div>)
   } else if (data) {
     networkContent = (<NetworkList
-      clientList={data.getClients as Client[]}
+      clientList={data.getClients as ClientCS[]}
       range={range} />);
     clientContent = (<ClientToken
       range={range}
-      clientsByIp={(data.getClients as Client[]).reduce((prev: ActionByIp, client) => {
+      clientsByIp={(data.getClients as ClientCS[]).reduce((prev: ActionByIp, client) => {
         prev[client.ip] = { client, actions: [] };
         return prev;
       }, {})} />);

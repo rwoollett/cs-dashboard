@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Client } from "../../graphql/generated/graphql-cstoken";
+import { ClientCS } from "../../types";
 import { GrSearch } from "react-icons/gr";
 import ClientNode from "./ClientNode";
 import axios from 'axios';
@@ -7,10 +7,9 @@ import axios from 'axios';
 /**
  * Network list.
  * Show all network node clients in the range of ports network
- * 
  */
 type NetworkListProps = {
-  clientList: Client[];
+  clientList: ClientCS[];
   range: {
     from: number;
     to: number;
@@ -21,7 +20,7 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
 
   const clientsList = clientList.map((client) => {
     return (
-      <div key={`${client.id}`} className="cell">
+      <div key={`${client.host}_${client.ip}`} className="cell">
         <div  className="panel-block">
           <ClientNode client={client} />
         </div>

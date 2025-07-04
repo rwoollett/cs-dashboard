@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Client, useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
+import { useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
+import { ClientCS } from "../../types";
 import { parseISO, format } from 'date-fns';
 
 type ClientNodeProps = {
-  client: Client;
+  client: ClientCS;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
-  // console.log('client',client,  format(new Date(), 'P p'));
+  console.log('client',client,  format(new Date(), 'P p'));
   const { data } = useConnectClientSubscription({
     variables: { sourceIp: client.ip }
   });

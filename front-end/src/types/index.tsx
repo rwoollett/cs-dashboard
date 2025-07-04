@@ -1,10 +1,12 @@
-import { AcquireCs, Client, RequestCs } from "../graphql/generated/graphql-cstoken";
+import { ClientCS, AcquireCS, RequestCS } from "./cstoken";
+
+export * from "./cstoken";
 
 export type TokenAction = {
   parentIp: string;
   timestamp: string;
   originalIp: string;
-  action: AcquireCs | RequestCs;
+  action: AcquireCS | RequestCS;
 }
 
 export interface Notification {
@@ -17,4 +19,4 @@ export interface Notification {
   read: boolean;
 }
 
-export type ActionByIp = Record<string, { client: Client; actions: TokenAction[]; }>;
+export type ActionByIp = Record<string, { client: ClientCS; actions: TokenAction[]; }>;

@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import _ from 'lodash';
-import { ActionByIp, TokenAction } from "../../types";
+import { ClientCS, RequestCS, AcquireCS, ActionByIp, TokenAction } from "../../types";
 import { format, parseISO } from "date-fns";
 import {
-  Client, RequestCs, AcquireCs,
   AcquiredCsTokenSubscription,
   AcquiredCsTokenSubscriptionVariables,
   RequestedCsTokenSubscription,
@@ -61,7 +60,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
             parentIp: data.data.requestCS_Created.parentIp,
             timestamp: data.data.requestCS_Created.requestedAt,
             originalIp: data.data.requestCS_Created.originalIp,
-            action: data.data.requestCS_Created as RequestCs
+            action: data.data.requestCS_Created as RequestCS
           } as TokenAction
         }
       });
@@ -79,13 +78,13 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           const newState = {
             ..._.cloneDeep(state),
             [clientForActivityIP]: {
-              client: { ..._.cloneDeep(state[clientForActivityIP].client as Client) },
+              client: { ..._.cloneDeep(state[clientForActivityIP].client as ClientCS) },
               actions: [..._.cloneDeep(state[clientForActivityIP].actions),
               {
                 parentIp: data.data.requestCS_Created.parentIp,
                 timestamp: data.data.requestCS_Created.requestedAt,
                 originalIp: data.data.requestCS_Created.originalIp,
-                action: data.data.requestCS_Created as RequestCs
+                action: data.data.requestCS_Created as RequestCS
               } as TokenAction
               ].slice(-10)
             }
@@ -111,7 +110,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
             parentIp: data.data.acquireCS_Created.sourceIp,
             timestamp: data.data.acquireCS_Created.acquiredAt,
             originalIp: data.data.acquireCS_Created.ip,
-            action: data.data.acquireCS_Created as AcquireCs
+            action: data.data.acquireCS_Created as AcquireCS
           } as TokenAction
         }
       });
@@ -124,13 +123,13 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           const newState = {
             ..._.cloneDeep(state),
             [clientForActivityIP]: {
-              client: { ..._.cloneDeep(state[clientForActivityIP].client as Client) },
+              client: { ..._.cloneDeep(state[clientForActivityIP].client as ClientCS) },
               actions: [..._.cloneDeep(state[clientForActivityIP].actions),
               {
                 parentIp: data.data.acquireCS_Created.sourceIp,
                 timestamp: data.data.acquireCS_Created.acquiredAt,
                 originalIp: data.data.acquireCS_Created.ip,
-                action: data.data.acquireCS_Created as AcquireCs
+                action: data.data.acquireCS_Created as AcquireCS
               } as TokenAction
               ].slice(-10)
             }
@@ -160,23 +159,23 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
       }
 
       let backgroundItem: string = "";
-      switch (activity.action.__typename) {
-        case 'RequestCS':
-          if (activity.action.sourceIp !== ip) {
-            backgroundItem = styles.relayedItem;
-            activityLabel = 'Relay'
-            activityDescription = `${activity.action.sourceIp} --> P:${activity.action.parentIp}`
-          } else {
-            backgroundItem = styles.requestedItem;
-            activityLabel = 'Request'
-            activityDescription = `${ip} --> P:${activity.parentIp}`
-          }
-          break;
-        default:
-          backgroundItem = styles.acquiredItem;
-          activityLabel = 'Acquire'
-          activityDescription = `${activity.originalIp} <-- P:${activity.parentIp}`
-          break;
+      // Use discriminated union by checking a unique property of each type
+      if ('requestedAt' in activity.action) {
+        // This is a RequestCS
+        if ((activity.action as RequestCS).sourceIp !== ip) {
+          backgroundItem = styles.relayedItem;
+          activityLabel = 'Relay';
+          activityDescription = `${(activity.action as RequestCS).sourceIp} --> P:${(activity.action as RequestCS).parentIp}`;
+        } else {
+          backgroundItem = styles.requestedItem;
+          activityLabel = 'Request';
+          activityDescription = `${ip} --> P:${activity.parentIp}`;
+        }
+      } else if ('acquiredAt' in activity.action) {
+        // This is an AcquireCS
+        backgroundItem = styles.acquiredItem;
+        activityLabel = 'Acquire';
+        activityDescription = `${activity.originalIp} <-- P:${activity.parentIp}`;
       }
 
       return (
@@ -198,7 +197,7 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
     });
 
     return (
-      <tr className="" key={`${action.client.id}`}>
+      <tr className="" key={`${action.client.host}_${action.client.ip}`}>
         <td>
           {ip}
         </td>
