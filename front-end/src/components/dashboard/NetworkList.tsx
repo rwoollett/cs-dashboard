@@ -68,7 +68,7 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
           <p className="is-size-7 my-0 p-0 column is-one-third"><span className="has-text-weight-light">To: </span>{range.to}</p>
         </div>
       </div>
-      <div className="panel-block">
+      {/* <div className="panel-block">
         <div>
           {errors}
           <div className="fixed-grid has-2-cols">
@@ -86,15 +86,15 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
             </div>
           </div>
         </div>
-      </div>
-      <label className="panel-block">
+      </div> */}
+      {/* <label className="panel-block">
         <p className="control has-icons-left">
           <input className="input" type="text" placeholder="Search" />
           <span className="icon is-left">
             <GrSearch />
           </span>
         </p>
-      </label>
+      </label> */}
       <div className="grid is-gap-0 is-col-min-6">
         {clientsList}
       </div>
