@@ -1,7 +1,7 @@
 import { createContext, useEffect, useRef, useState } from "react";
 import websocketClient, { WebSocketClient } from "../client/wsock";
 
-type WSMessage = { type: string; payload: any };
+type WSMessage = { subject: string; payload: any };
 
 type WebSocketContextType = {
   wsRef: React.MutableRefObject<WebSocketClient | null>;

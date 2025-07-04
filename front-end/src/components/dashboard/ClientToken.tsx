@@ -1,14 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import _ from 'lodash';
 import { ClientCS, RequestCS, AcquireCS, ActionByIp, TokenAction } from "../../types";
 import { format, parseISO } from "date-fns";
-import {
-  AcquiredCsTokenSubscription,
-  AcquiredCsTokenSubscriptionVariables,
-  RequestedCsTokenSubscription,
-  RequestedCsTokenSubscriptionVariables
-} from "../../graphql/generated/graphql-cstoken";
-import { gql, useSubscription, TypedDocumentNode } from "@apollo/client";
+import { useWebSocket } from "../../hooks/use-websocket-context";
 import styles from './ClientToken.module.css'
 
 /**
@@ -25,54 +19,35 @@ type ClientTokenProps = {
 }
 
 const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
-  const REQUESTED_TOKEN: TypedDocumentNode<RequestedCsTokenSubscription, RequestedCsTokenSubscriptionVariables> = gql`
-      subscription RequestedCSToken {
-        requestCS_Created {
-          sourceIp
-          originalIp
-          parentIp
-          relayed
-          requestedAt
-        }
-      }
-    `;
-
-  const ACQUIRED_TOKEN: TypedDocumentNode<AcquiredCsTokenSubscription, AcquiredCsTokenSubscriptionVariables> = gql`
-      subscription AcquiredCSToken {
-        acquireCS_Created {
-          ip
-          sourceIp
-          acquiredAt
-        }
-      }
-    `;
-
+  const { lastMessage } = useWebSocket();
   const [clientActions, setClientActions] = useState<ActionByIp>(clientsByIp);
   const [lastActivity, setLastActivity] = useState<TokenAction | undefined>(undefined);
 
-  useSubscription(
-    REQUESTED_TOKEN, {
-    onData({ data }) {
+  useEffect(() => {
+    if (!lastMessage) return;
 
+    if (lastMessage.subject === "csToken_request") {
+
+      const event = lastMessage.payload as RequestCS;
       setLastActivity(() => {
-        if (data.data && data.data?.requestCS_Created && data.data.requestCS_Created.sourceIp) {
+        if (event.sourceIp) {
           return {
-            parentIp: data.data.requestCS_Created.parentIp,
-            timestamp: data.data.requestCS_Created.requestedAt,
-            originalIp: data.data.requestCS_Created.originalIp,
-            action: data.data.requestCS_Created as RequestCS
+            parentIp: event.parentIp,
+            timestamp: event.requestedAt,
+            originalIp: event.originalIp,
+            action: event as RequestCS
           } as TokenAction
         }
       });
 
       setClientActions((state) => {
-        if (data.data && data.data?.requestCS_Created && data.data.requestCS_Created.sourceIp) {
+        if (event.sourceIp) {
 
           let clientForActivityIP: string = "";
-          if (data.data.requestCS_Created.originalIp === data.data.requestCS_Created.sourceIp) {
-            clientForActivityIP = data.data.requestCS_Created.sourceIp;
+          if (event.originalIp === event.sourceIp) {
+            clientForActivityIP = event.sourceIp;
           } else {
-            clientForActivityIP = data.data.requestCS_Created.originalIp;
+            clientForActivityIP = event.originalIp;
           }
 
           const newState = {
@@ -81,10 +56,10 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
               client: { ..._.cloneDeep(state[clientForActivityIP].client as ClientCS) },
               actions: [..._.cloneDeep(state[clientForActivityIP].actions),
               {
-                parentIp: data.data.requestCS_Created.parentIp,
-                timestamp: data.data.requestCS_Created.requestedAt,
-                originalIp: data.data.requestCS_Created.originalIp,
-                action: data.data.requestCS_Created as RequestCS
+                parentIp: event.parentIp,
+                timestamp: event.requestedAt,
+                originalIp: event.originalIp,
+                action: event as RequestCS
               } as TokenAction
               ].slice(-10)
             }
@@ -97,28 +72,26 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           return { ...state };
         }
       });
+
     }
-  });
+    if (lastMessage.subject === "csToken_acquire") {
 
-  useSubscription(
-    ACQUIRED_TOKEN, {
-    onData({ data }) {
-
+      const event = lastMessage.payload as AcquireCS;
       setLastActivity(() => {
-        if (data.data && data.data?.acquireCS_Created && data.data.acquireCS_Created.ip) {
+        if (event.ip) {
           return {
-            parentIp: data.data.acquireCS_Created.sourceIp,
-            timestamp: data.data.acquireCS_Created.acquiredAt,
-            originalIp: data.data.acquireCS_Created.ip,
-            action: data.data.acquireCS_Created as AcquireCS
+            parentIp: event.sourceIp,
+            timestamp: event.acquiredAt,
+            originalIp: event.ip,
+            action: event as AcquireCS
           } as TokenAction
         }
       });
 
       setClientActions((state) => {
-        if (data.data && data.data?.acquireCS_Created && data.data.acquireCS_Created.ip) {
+        if (event.ip) {
 
-          let clientForActivityIP: string = data.data.acquireCS_Created.ip;
+          let clientForActivityIP: string = event.ip;
 
           const newState = {
             ..._.cloneDeep(state),
@@ -126,10 +99,10 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
               client: { ..._.cloneDeep(state[clientForActivityIP].client as ClientCS) },
               actions: [..._.cloneDeep(state[clientForActivityIP].actions),
               {
-                parentIp: data.data.acquireCS_Created.sourceIp,
-                timestamp: data.data.acquireCS_Created.acquiredAt,
-                originalIp: data.data.acquireCS_Created.ip,
-                action: data.data.acquireCS_Created as AcquireCS
+                parentIp: event.sourceIp,
+                timestamp: event.acquiredAt,
+                originalIp: event.ip,
+                action: event as AcquireCS
               } as TokenAction
               ].slice(-10)
             }
@@ -142,9 +115,12 @@ const ClientToken: React.FC<ClientTokenProps> = ({ range, clientsByIp }) => {
           return { ...state };
         }
       });
-    }
-  });
 
+    }
+
+  }, [lastMessage]);
+
+  
   const clientsList = Object.entries(clientActions).map(([ip, action]) => {
     const activity = action.actions.map((activity, index) => {
 

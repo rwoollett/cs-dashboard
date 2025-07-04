@@ -16,11 +16,11 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
     if (!lastMessage) return;
     console.log('onMessage', lastMessage);
 
-    if (lastMessage.type === "clientCS_Connected") {
+    if (lastMessage.subject === "clientCS_Connected") {
       setConnectedAt(lastMessage.payload.connectedAt);
       setConnected(true);
     }
-    if (lastMessage.type === "clientCS_Disconnected") {
+    if (lastMessage.subject === "clientCS_Disconnected") {
       setDisconnectedAt(lastMessage.payload.disconnectedAt);
       setConnected(false);
     }
