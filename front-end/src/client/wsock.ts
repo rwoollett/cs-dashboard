@@ -13,6 +13,7 @@ interface WebSocketClientOptions<T> {
 export interface WebSocketClient {
   client: WebSocket;
   send: (payload: Message) => void;
+  close: () => void;
 }
 
 const websockets = {
@@ -44,6 +45,9 @@ const websocketClient = <T>(
 
       return client?.send(JSON.stringify(payload));
     },
+    close: () => {
+      client?.close();
+    }
   };
 
   client.addEventListener("open", () => {

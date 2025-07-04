@@ -1,48 +1,34 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import useUsersContext from '../hooks/use-users-context';
 import { User } from '../context/User';
-import websocketClient, { WebSocketClient } from '../client/wsock';
 import { Notification } from '../types';
+import { useWebSocket } from '../hooks/use-websocket-context';
 
 const Header: React.FC = () => {
   const { user, signOut } = useUsersContext();
-  const webSocket = useRef<WebSocketClient | null>(null);
-  const [connected, setConnected] = useState(false);
+  const { wsRef, lastMessage } = useWebSocket();
+  const [connected, setConnected] = useState(wsRef.current?.client !== undefined);
   const [received, setReceived] = useState<Notification[]>([]);
 
   const latestTimestamp = 'something';
 
   const handleSendMessage = () => {
     const { payload } = { payload: latestTimestamp };
-    if (webSocket.current && connected) {
-      webSocket.current.send({ payload });
+    if (wsRef.current && connected) {
+      wsRef.current.send({ payload });
     } else {
       console.log('WebSocket is not connected');
     }
   };
 
   useEffect(() => {
-    websocketClient<{ type: string; payload: Notification[] }>(
-      {
-        queryParams: {
-          type: "fetch_since",
-          user: "sender"
-        },
-        onMessage: (message) => {
-          setReceived(prev => {
-            return [...prev].concat(message.payload);
-          });
-        },
-        onDisconnect: () => {
-          setConnected(false);
-        },
-      },
-      (websocketClient) => {
-        setConnected(true);
-        webSocket.current = websocketClient;
-      }
-    );
-  }, []);
+    if (!lastMessage) return;
+    setConnected(true);
+    setReceived(prev => {
+      return [...prev].concat(lastMessage.payload);
+    });
+
+  }, [lastMessage]);
 
   return (
     <header>
@@ -58,7 +44,7 @@ const Header: React.FC = () => {
             <button type="button" className="tag is-link" onClick={signOut}>Log out</button>
           </div>
           <div className="column is-narrow">
-              <span className={`tag ${connected ? 'is-success' : 'is-danger'}`}>
+            <span className={`tag ${connected ? 'is-success' : 'is-danger'}`}>
               {connected ? 'Connected' : 'Disconnected'}
             </span>
           </div>

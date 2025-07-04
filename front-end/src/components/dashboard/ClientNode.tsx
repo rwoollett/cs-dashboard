@@ -1,36 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { useConnectClientSubscription, useDisconnectClientSubscription } from "../../graphql/generated/graphql-cstoken";
 import { ClientCS } from "../../types";
 import { parseISO, format } from 'date-fns';
+import { useWebSocket } from "../../hooks/use-websocket-context";
 
 type ClientNodeProps = {
   client: ClientCS;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
-  console.log('client',client,  format(new Date(), 'P p'));
-  const { data } = useConnectClientSubscription({
-    variables: { sourceIp: client.ip }
-  });
-  const { data: dcData } = useDisconnectClientSubscription({
-    variables: { sourceIp: client.ip }
-  });
+  const { lastMessage } = useWebSocket();
   const [connected, setConnected] = useState<boolean>(client.connected);
   const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
-  const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt ||  new Date().toISOString());
+  const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt || new Date().toISOString());
 
   useEffect(() => {
-    if (data?.clientCS_Connected) {
-      setConnectedAt(data.clientCS_Connected.connectedAt);
+    if (!lastMessage) return;
+    console.log('onMessage', lastMessage);
+
+    if (lastMessage.type === "clientCS_Connected") {
+      setConnectedAt(lastMessage.payload.connectedAt);
       setConnected(true);
     }
-  }, [data])
-
-  useEffect(() => {
-    if (dcData?.clientCS_Disconnected) {
-      setDisconnectedAt(dcData.clientCS_Disconnected.disconnectedAt);
+    if (lastMessage.type === "clientCS_Disconnected") {
+      setDisconnectedAt(lastMessage.payload.disconnectedAt);
       setConnected(false);
     }
-  }, [dcData])
+  }, [lastMessage]);
 
   return (
     <div className="card">

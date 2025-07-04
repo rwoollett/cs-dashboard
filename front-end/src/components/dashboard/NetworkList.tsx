@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { ClientCS } from "../../types";
-import { GrSearch } from "react-icons/gr";
 import ClientNode from "./ClientNode";
-import axios from 'axios';
+//import { GrSearch } from "react-icons/gr";
+//import axios from 'axios';
 
 /**
  * Network list.
@@ -28,35 +28,35 @@ const NetworkList: React.FC<NetworkListProps> = ({ clientList, range }) => {
     );
   });
 
-  const [errors, setErrors] = useState<JSX.Element | null>(null);
+  // const [errors, setErrors] = useState<JSX.Element | null>(null);
 
-  const doPostStartRequest = async (props = {}) => {
-    const body = {};
-    try {
-      setErrors(null);
-      const response = await axios.post('/api/client/start', { ...body, ...props });
-      return response.data;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.log(err);
-        // } else {
-        //   handleUnexpectedError(err);
-      }
-    }
-  };
+  // const doPostStartRequest = async (props = {}) => {
+  //   const body = {};
+  //   try {
+  //     setErrors(null);
+  //     const response = await axios.post('/api/client/start', { ...body, ...props });
+  //     return response.data;
+  //   } catch (err) {
+  //     if (axios.isAxiosError(err)) {
+  //       console.log(err);
+  //       // } else {
+  //       //   handleUnexpectedError(err);
+  //     }
+  //   }
+  // };
 
-  const doPostStopRequest = async (props = {}) => {
-    const body = {};
-    try {
-      setErrors(null);
-      const response = await axios.post('/api/client/stop', { ...body, ...props });
-      return response.data;
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.log(err);
-      }
-    }
-  };
+  // const doPostStopRequest = async (props = {}) => {
+  //   const body = {};
+  //   try {
+  //     setErrors(null);
+  //     const response = await axios.post('/api/client/stop', { ...body, ...props });
+  //     return response.data;
+  //   } catch (err) {
+  //     if (axios.isAxiosError(err)) {
+  //       console.log(err);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="panel">

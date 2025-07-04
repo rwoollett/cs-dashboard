@@ -3,6 +3,7 @@ import MainPanel from './components/MainPanel';
 import { ApolloProvider } from '@apollo/client';
 import createApolloClient from './client/apollo';
 import { UsersProvider } from './context/users';
+import { WebSocketProvider } from "./context/websocket";
 import useUsersContext from './hooks/use-users-context';
 import Header from './components/Header';
 
@@ -32,13 +33,15 @@ const App: React.FC = () => {
   return (
     <UsersProvider>
       <ApolloClientProvider>
-        <section className="section">
-          <div className="pt-0 container">
-            <Header />
-            {/* <p>{!data ? "Loading..." : data}</p> */}
-            <MainPanel />
-          </div>
-        </section >
+        <WebSocketProvider>
+          <section className="section">
+            <div className="pt-0 container">
+              <Header />
+              {/* <p>{!data ? "Loading..." : data}</p> */}
+              <MainPanel />
+            </div>
+          </section >
+        </WebSocketProvider>
       </ApolloClientProvider>
     </UsersProvider>
 
