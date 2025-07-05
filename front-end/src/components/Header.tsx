@@ -8,7 +8,7 @@ const Header: React.FC = () => {
   const { user, signOut } = useUsersContext();
   const { wsRef, lastMessage } = useWebSocket();
   const [connected, setConnected] = useState(wsRef.current?.client !== undefined);
-  const [received, setReceived] = useState<Notification[]>([]);
+  const [received, setReceived] = useState<string[]>([]);
 
   const latestTimestamp = 'something';
 
@@ -25,7 +25,7 @@ const Header: React.FC = () => {
     if (!lastMessage) return;
     setConnected(true);
     setReceived(prev => {
-      return [...prev].concat(lastMessage.payload);
+      return [...prev].concat(lastMessage.payload as unknown as string);
     });
 
   }, [lastMessage]);

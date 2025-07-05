@@ -13,10 +13,10 @@ const MainPanel: React.FC = () => {
     <section className="mt-2 panel is-primary">
       <div className="container is-widescreen">
         <div className="px-4 pb-6">
-          <CanvasTTT />
+          <Dashboard />
         </div>
         <div className="px-4 pb-6">
-          <Dashboard />
+          <CanvasTTT />
         </div>
         {/* <div className="px-4 pb-6">
           <CanvasGOL />

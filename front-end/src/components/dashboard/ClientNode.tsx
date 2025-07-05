@@ -14,15 +14,15 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
 
   useEffect(() => {
     if (!lastMessage) return;
-    console.log('onMessage', lastMessage);
-
-    if (lastMessage.subject === "clientCS_Connected") {
-      setConnectedAt(lastMessage.payload.connectedAt);
-      setConnected(true);
-    }
-    if (lastMessage.subject === "clientCS_Disconnected") {
-      setDisconnectedAt(lastMessage.payload.disconnectedAt);
-      setConnected(false);
+    if (client.ip === lastMessage.payload.sourceIp) {
+      if (lastMessage.subject === "clientCS_Connected") {
+        setConnectedAt(lastMessage.payload.connectedAt);
+        setConnected(true);
+      }
+      if (lastMessage.subject === "clientCS_Disconnected") {
+        setDisconnectedAt(lastMessage.payload.disconnectedAt);
+        setConnected(false);
+      }
     }
   }, [lastMessage]);
 

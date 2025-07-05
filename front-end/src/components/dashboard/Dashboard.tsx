@@ -19,7 +19,7 @@ import useUsersContext from "../../hooks/use-users-context";
 
 const Dashboard: React.FC = () => {
   const { user } = useUsersContext();
-  const range = { from: 7010, to: 7040 };
+  const range = { from: 5010, to: 7040 };
 
   const [data, setData] = useState<{ getClients: ClientCS[] } | null>(null);
   const [loading, setLoading] = useState(true);
