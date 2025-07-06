@@ -1,12 +1,12 @@
 import { createContext, useEffect, useRef, useState } from "react";
 import websocketClient, { WebSocketClient } from "../client/wsock";
-import { AcquireCS, ConnectedClient, DisconnectedClient, RequestCS } from "../types";
+import { WSMessage } from "../types";
 
-type WSMessage =
-  | { subject: "clientCS_Connected"; payload: ConnectedClient }
-  | { subject: "clientCS_Disconnected"; payload: DisconnectedClient }
-  | { subject: "csToken_acquire"; payload: AcquireCS }
-  | { subject: "csToken_request"; payload: RequestCS };
+// type WSMessage =
+//   | { subject: "clientCS_Connected"; payload: ConnectedClient }
+//   | { subject: "clientCS_Disconnected"; payload: DisconnectedClient }
+//   | { subject: "csToken_acquire"; payload: AcquireCS }
+//   | { subject: "csToken_request"; payload: RequestCS };
 //  | { subject: string; payload: Notification};
 
 type WebSocketContextType = {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ClientCS } from "../../types";
+import React, { useEffect, useRef, useState } from "react";
+import { ClientCS, WSMessage } from "../../types";
 import { parseISO, format } from 'date-fns';
 import { useWebSocket } from "../../hooks/use-websocket-context";
 
@@ -12,19 +12,34 @@ const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
   const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
   const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt || new Date().toISOString());
 
+  // Queue to store incoming messages
+  const messageQueue = useRef<WSMessage[]>([]);
+
+  // State to trigger processing
+  const [processTrigger, setProcessTrigger] = useState(0);
+
+  // Push every new message into the queue
   useEffect(() => {
     if (!lastMessage) return;
-    if (client.ip === lastMessage.payload.sourceIp) {
-      if (lastMessage.subject === "clientCS_Connected") {
-        setConnectedAt(lastMessage.payload.connectedAt);
-        setConnected(true);
-      }
-      if (lastMessage.subject === "clientCS_Disconnected") {
-        setDisconnectedAt(lastMessage.payload.disconnectedAt);
-        setConnected(false);
+    messageQueue.current.push(lastMessage);
+    setProcessTrigger(trigger => trigger + 1);
+  }, [lastMessage]);
+
+  useEffect(() => {
+    while (messageQueue.current.length > 0) {
+      const msg = messageQueue.current.shift();
+      if (msg && client.ip === msg.payload.sourceIp) {
+        if (msg.subject === "clientCS_Connected") {
+          setConnectedAt(msg.payload.connectedAt);
+          setConnected(true);
+        }
+        if (msg.subject === "clientCS_Disconnected") {
+          setDisconnectedAt(msg.payload.disconnectedAt);
+          setConnected(false);
+        }
       }
     }
-  }, [lastMessage]);
+  }, [processTrigger, client.ip]);
 
   return (
     <div className="card">
