@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ClientCS, WSMessage } from "../../types";
+import React, { useEffect, useState } from "react";
+import { ClientCS } from "../../types";
 import { parseISO, format } from 'date-fns';
 import { useWebSocket } from "../../hooks/use-websocket-context";
 
@@ -7,39 +7,35 @@ type ClientNodeProps = {
   client: ClientCS;
 }
 const ClientNode: React.FC<ClientNodeProps> = ({ client }) => {
-  const { lastMessage } = useWebSocket();
   const [connected, setConnected] = useState<boolean>(client.connected);
   const [connectedAt, setConnectedAt] = useState<string>(client.connectedAt);
   const [disconnectedAt, setDisconnectedAt] = useState<string>(client.disconnectedAt || new Date().toISOString());
-
-  // Queue to store incoming messages
-  const messageQueue = useRef<WSMessage[]>([]);
-
-  // State to trigger processing
-  const [processTrigger, setProcessTrigger] = useState(0);
-
-  // Push every new message into the queue
-  useEffect(() => {
-    if (!lastMessage) return;
-    messageQueue.current.push(lastMessage);
-    setProcessTrigger(trigger => trigger + 1);
-  }, [lastMessage]);
+  const { messageQueue } = useWebSocket();
+  const [lastProcessedSeq, setLastProcessedSeq] = useState(0);
 
   useEffect(() => {
-    while (messageQueue.current.length > 0) {
-      const msg = messageQueue.current.shift();
-      if (msg && client.ip === msg.payload.sourceIp) {
-        if (msg.subject === "clientCS_Connected") {
+    let updatedSeq = lastProcessedSeq;
+    for (const { seq, msg } of messageQueue) {
+      if (seq > updatedSeq) {
+        if (msg.subject === "clientCS_Connected" && client.ip === msg.payload.sourceIp) {
+          //console.log('client', client.ip, updatedSeq, seq, msg);
           setConnectedAt(msg.payload.connectedAt);
           setConnected(true);
         }
-        if (msg.subject === "clientCS_Disconnected") {
+
+        if (msg.subject === "clientCS_Disconnected" && client.ip === msg.payload.sourceIp) {
+          //console.log('client', client.ip, updatedSeq, seq, msg);
           setDisconnectedAt(msg.payload.disconnectedAt);
           setConnected(false);
         }
+        updatedSeq = seq;
       }
     }
-  }, [processTrigger, client.ip]);
+    if (updatedSeq !== lastProcessedSeq) {
+      setLastProcessedSeq(updatedSeq);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messageQueue, client.ip]);
 
   return (
     <div className="card">

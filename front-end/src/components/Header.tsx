@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import useUsersContext from '../hooks/use-users-context';
 import { User } from '../context/User';
-import { Notification } from '../types';
 import { useWebSocket } from '../hooks/use-websocket-context';
 
 const Header: React.FC = () => {
   const { user, signOut } = useUsersContext();
-  const { wsRef, lastMessage } = useWebSocket();
+  const { wsRef, messageQueue } = useWebSocket();
   const [connected, setConnected] = useState(wsRef.current?.client !== undefined);
   const [received, setReceived] = useState<string[]>([]);
-
   const latestTimestamp = 'something';
+  const lastProcessedSeq = useRef(0);
 
   const handleSendMessage = () => {
     const { payload } = { payload: latestTimestamp };
@@ -22,13 +21,16 @@ const Header: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!lastMessage) return;
-    setConnected(true);
-    setReceived(prev => {
-      return [...prev].concat(lastMessage.payload as unknown as string);
-    });
-
-  }, [lastMessage]);
+    for (const { seq, msg } of messageQueue) {
+      if (seq > lastProcessedSeq.current) {
+        setConnected(true);
+        setReceived(prev => {
+          return [...prev].concat(msg.payload as unknown as string);
+        });
+        lastProcessedSeq.current = seq;
+      }
+    }
+  }, [messageQueue]);
 
   return (
     <header>
