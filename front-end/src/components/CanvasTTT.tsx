@@ -6,9 +6,6 @@ import {
   BoardMoveDocument,
   BoardMoveMutation,
   BoardMoveMutationVariables,
-  CreateGameDocument,
-  CreateGameMutation,
-  CreateGameMutationVariables,
   GameUpdateByGameIdDocument,
   GameUpdateByGameIdSubscription,
   GameUpdateByGameIdSubscriptionVariables,
@@ -18,19 +15,13 @@ import {
 } from '../graphql/generated/graphql-ttt';
 import { Game, isGame } from '../types';
 
-const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
 const START_GAME: TypedDocumentNode<StartGameMutation, StartGameMutationVariables> = StartGameDocument;
 const BOARD_MOVE: TypedDocumentNode<BoardMoveMutation, BoardMoveMutationVariables> = BoardMoveDocument;
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
 const CanvasComponent: React.FC = () => {
 
-  // const [createGame, { data: createGameData }] = useMutation(
-  //   CREATE_GAME, {
-  //   context: { service: 'ttt' }
-  // });
   const [createGameData, setCreateGameData] = useState<Game | null>(null);
-
   const createGame = async (userId: string) => {
     try {
       const response = await fetch("http://localhost:3009/api/v1/game", {
