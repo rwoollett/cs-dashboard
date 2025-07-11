@@ -90,7 +90,6 @@ const CanvasComponent: React.FC = () => {
 
   useEffect(() => {
     if (createGameData) {
-      console.log('Create game result api call', createGameData);
       setGameId(createGameData.id);
     }
   }, [createGameData]);
