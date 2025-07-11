@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
     );
   } else {
     dashboardContent = (
-      <div>
+      <div className="column is-full">
         <SignIn />
       </div>
     )
