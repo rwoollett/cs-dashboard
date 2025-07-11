@@ -16,6 +16,7 @@ import {
   StartGameMutation,
   StartGameMutationVariables,
 } from '../graphql/generated/graphql-ttt';
+import { Game, isGame } from '../types';
 
 const CREATE_GAME: TypedDocumentNode<CreateGameMutation, CreateGameMutationVariables> = CreateGameDocument;
 const START_GAME: TypedDocumentNode<StartGameMutation, StartGameMutationVariables> = StartGameDocument;
@@ -24,10 +25,30 @@ const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateB
 
 const CanvasComponent: React.FC = () => {
 
-  const [createGame, { data: createGameData }] = useMutation(
-    CREATE_GAME, {
-    context: { service: 'ttt' }
-  });
+  // const [createGame, { data: createGameData }] = useMutation(
+  //   CREATE_GAME, {
+  //   context: { service: 'ttt' }
+  // });
+  const [createGameData, setCreateGameData] = useState<Game | null>(null);
+
+  const createGame = async (userId: string) => {
+    try {
+      const response = await fetch("http://localhost:3009/api/v1/game", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId })
+      });
+      const data = await response.json();
+      if (!data || !isGame(data.createGame)) {
+        throw new Error("Invalid response format");
+      } else {
+        setCreateGameData(data.createGame);
+      }
+    } catch (error) {
+      console.error("Failed to create game:", error);
+      setCreateGameData(null);
+    }
+  };
 
   const [startGame, { data: startGameData }] = useMutation(
     START_GAME, {
@@ -59,7 +80,7 @@ const CanvasComponent: React.FC = () => {
   ];
 
   // GameID is required before any ui activity on the page
-  const [gameId, setGameId] = useState<number>(-1);
+  const [gameId, setGameId] = useState<string>("EMPTY");
   const [gameActive, setGameActive] = useState(false);
 
   const [player, setPlayer] = useState<Option>(playerCharactors[0]);
@@ -73,15 +94,13 @@ const CanvasComponent: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    createGame({
-      variables: { userId: 99999999 }
-    });
-  }, [createGame, player]);
+    createGame("99999999");
+  }, [player]);
 
   useEffect(() => {
     if (createGameData) {
-      // console.log(createGameData.createGame);
-      setGameId(createGameData.createGame.id);
+      console.log('Create game result api call', createGameData);
+      setGameId(createGameData.id);
     }
   }, [createGameData]);
 
@@ -103,9 +122,9 @@ const CanvasComponent: React.FC = () => {
 
   useSubscription(
     UPDATE_GAME, {
-    variables: { gameId },
+    variables: { gameId: Number(gameId) },
     context: { service: 'ttt' },
-    skip: gameId === -1,
+    skip: gameId === "EMPTY",
     onData({ data }) {
       if (data.data?.game_Update) {
         //console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.result, data.data.game_Update.gameId);
@@ -147,7 +166,7 @@ const CanvasComponent: React.FC = () => {
       setGameActive(false);
 
     } else {
-      startGame({ variables: { gameId } });
+      startGame({ variables: { gameId: Number(gameId) } });
       setStartButtonText('Start Game');
       setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
       //setGameActive(true);
@@ -157,7 +176,7 @@ const CanvasComponent: React.FC = () => {
       if (isOpponentStart) {
         const playerNumber = parseInt(player.value);
         boardMove({
-          variables: { gameId, player: playerNumber, moveCell: -1, isOpponentStart }
+          variables: { gameId: Number(gameId), player: playerNumber, moveCell: -1, isOpponentStart }
         });
 
       } else {
@@ -175,7 +194,7 @@ const CanvasComponent: React.FC = () => {
       if (k !== -1 && board[k] === 0) {
         const playerNumber = parseInt(player.value);
         boardMove({
-          variables: { gameId, player: playerNumber, moveCell: k, isOpponentStart }
+          variables: { gameId: Number(gameId), player: playerNumber, moveCell: k, isOpponentStart }
         });
         setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
         setBoardUpdated(false);

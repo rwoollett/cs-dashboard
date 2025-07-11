@@ -29,7 +29,6 @@ const Dashboard: React.FC = () => {
     fetch(`http://localhost:3003/api/v1/clients/range/${range.from}/${range.to}`)
       .then(res => res.json())
       .then(json => {
-        console.log("Fetched clients:", json);
         if (!json || !Array.isArray(json.getClients)) {
           throw new Error("Invalid response format");
         }
