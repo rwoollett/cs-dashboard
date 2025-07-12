@@ -1,5 +1,5 @@
 import { ClientCS, AcquireCS, RequestCS } from "./cstoken";
-import { Game } from "./ttt";
+import { Game, PlayerMove } from "./ttt";
 
 export * from "./cstoken";
 export * from "./ttt";
@@ -33,6 +33,18 @@ export function isGame(obj: any): obj is Game {
     typeof obj.createdAt === "string"
   );
 }
+
+export function isMove(obj: any): obj is PlayerMove {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    typeof obj.id === "string" &&
+    typeof obj.gameId === "string" &&
+    typeof obj.player === "number" &&
+    typeof obj.moveCell === "number"
+  );
+}
+
 export type CreateGameMutationVariables = {
   userId: string;
 };

@@ -1,22 +1,14 @@
 import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
-import { TypedDocumentNode, useMutation, useSubscription } from '@apollo/client';
+import { TypedDocumentNode, useSubscription } from '@apollo/client';
 import {
-  BoardMoveDocument,
-  BoardMoveMutation,
-  BoardMoveMutationVariables,
   GameUpdateByGameIdDocument,
   GameUpdateByGameIdSubscription,
   GameUpdateByGameIdSubscriptionVariables,
-  StartGameDocument,
-  StartGameMutation,
-  StartGameMutationVariables,
 } from '../graphql/generated/graphql-ttt';
-import { Game, isGame } from '../types';
+import { Game, isGame, isMove, PlayerMove } from '../types';
 
-const START_GAME: TypedDocumentNode<StartGameMutation, StartGameMutationVariables> = StartGameDocument;
-const BOARD_MOVE: TypedDocumentNode<BoardMoveMutation, BoardMoveMutationVariables> = BoardMoveDocument;
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
 const CanvasComponent: React.FC = () => {
@@ -24,7 +16,7 @@ const CanvasComponent: React.FC = () => {
   const [createGameData, setCreateGameData] = useState<Game | null>(null);
   const createGame = async (userId: string) => {
     try {
-      const response = await fetch("http://localhost:3009/api/v1/game", {
+      const response = await fetch("http://localhost:3009/api/v1/game/create", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId })
@@ -41,15 +33,45 @@ const CanvasComponent: React.FC = () => {
     }
   };
 
-  const [startGame, { data: startGameData }] = useMutation(
-    START_GAME, {
-    context: { service: 'ttt' }
-  });
+  const [startGameData, setStartGameData] = useState<Game | null>(null);
+  const startGame = async (gameId: string) => {
+    try {
+      const response = await fetch("http://localhost:3009/api/v1/game/start", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId })
+      });
+      const data = await response.json();
+      if (!data || !isGame(data.startGame)) {
+        throw new Error("Invalid response format");
+      } else {
+        setStartGameData(data.startGame);
+      }
+    } catch (error) {
+      console.error("Failed to create game:", error);
+      setStartGameData(null);
+    }
+  };
 
-  const [boardMove, { data: boardMoveData }] = useMutation(
-    BOARD_MOVE, {
-    context: { service: 'ttt' }
-  });
+  const [boardMoveData, setBoardMoveData] = useState<PlayerMove | null>(null);
+  const boardMove = async (gameId: string, player: number, moveCell: number, isOpponentStart: boolean ) => {
+    try {
+      const response = await fetch("http://localhost:3009/api/v1/game/move", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId, player, moveCell, isOpponentStart })
+      });
+      const data = await response.json();
+      if (!data || !isMove(data.boardMove)) {
+        throw new Error("Invalid response format");
+      } else {
+        setBoardMoveData(data.startGame);
+      }
+    } catch (error) {
+      console.error("Failed to create game:", error);
+      setBoardMoveData(null);
+    }
+  };
 
   const boardBounds: BoardBounds = useMemo(() => {
     return {
@@ -97,7 +119,7 @@ const CanvasComponent: React.FC = () => {
   useEffect(() => {
     if (startGameData) {
       setBoard(() => {
-        let newBoard: number[] = startGameData.startGame.board.split(",").map((cell) => parseInt(cell));
+        let newBoard: number[] = startGameData.board.split(",").map((cell) => parseInt(cell));
         return newBoard;
       });
       setGameActive(true);
@@ -156,7 +178,7 @@ const CanvasComponent: React.FC = () => {
       setGameActive(false);
 
     } else {
-      startGame({ variables: { gameId: Number(gameId) } });
+      startGame(gameId);
       setStartButtonText('Start Game');
       setPlayMessage(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.")
       //setGameActive(true);
@@ -165,9 +187,7 @@ const CanvasComponent: React.FC = () => {
       // boardUpdated on Start playing game.
       if (isOpponentStart) {
         const playerNumber = parseInt(player.value);
-        boardMove({
-          variables: { gameId: Number(gameId), player: playerNumber, moveCell: -1, isOpponentStart }
-        });
+        boardMove(gameId, playerNumber, -1, isOpponentStart);
 
       } else {
         setBoardUpdated(true);
@@ -183,9 +203,7 @@ const CanvasComponent: React.FC = () => {
       const k = boardTraverse(x, y, boardBounds);
       if (k !== -1 && board[k] === 0) {
         const playerNumber = parseInt(player.value);
-        boardMove({
-          variables: { gameId: Number(gameId), player: playerNumber, moveCell: k, isOpponentStart }
-        });
+        boardMove(gameId, playerNumber, k, isOpponentStart);
         setPlayerMove(k); // to draw this move for waiting for subscribed boardUpdate
         setBoardUpdated(false);
         setHasMovedBoard(false);
