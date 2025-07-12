@@ -8,6 +8,7 @@ interface WebSocketClientOptions<T> {
   onDisconnect?: () => void;
   onMessage?: (payload: T) => void;
   queryParams?: Message;
+  service?: string;
 }
 
 export interface WebSocketClient {
@@ -21,15 +22,24 @@ const websockets = {
   //produrl: (process.env.NODE_ENV === 'production' && ENV.host && `ws://${ENV.host}`) || ""
 };
 
-const wsUrl = () => {
-  return `${websockets.url}:3003`;
+const wsUrl = (service: string) => {
+  if (service === 'TTT') {
+    return `${websockets.url}:3009`;
+  } else if (service === 'CSToken') {
+    return `${websockets.url}:3003`;
+  } else {
+    return `${websockets.url}:3003`;
+  }
 }
 
 const websocketClient = <T>(
   options: WebSocketClientOptions<T> = {},
   onConnect: (client: WebSocketClient) => void
 ): WebSocketClient => {
-  let url = wsUrl();
+  let url = wsUrl("CSToken");
+  if (options.service) {
+    url = wsUrl(options.service)
+  }
   if (options.queryParams) {
     url = `${url}?${queryString.stringify(options.queryParams)}`;
   }

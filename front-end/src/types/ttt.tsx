@@ -31,3 +31,12 @@ export type PlayerMove = {
 export type RemovalResult = {
   message: string;
 };
+
+export type BoardOutput = {
+  board: string;
+  gameId: string;
+  result: string;
+};
+
+export type WSTTTMessage = { subject: "game_Update"; payload: BoardOutput };
+

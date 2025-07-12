@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent,
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
 import { TypedDocumentNode, useSubscription } from '@apollo/client';
+import { useWebSocket } from "../hooks/use-websocket-context";
+
 import {
   GameUpdateByGameIdDocument,
   GameUpdateByGameIdSubscription,
@@ -12,6 +14,7 @@ import { Game, isGame, isMove, PlayerMove } from '../types';
 const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
 const CanvasComponent: React.FC = () => {
+  const { tttMessageQueue } = useWebSocket();
 
   const [createGameData, setCreateGameData] = useState<Game | null>(null);
   const createGame = async (userId: string) => {
@@ -103,6 +106,26 @@ const CanvasComponent: React.FC = () => {
   const [playMessage, setPlayMessage] = useState<string>(isOpponentStart ? "Opponent started. Good luck!" : "You make first move.");
   const [startButtonText, setStartButtonText] = useState('Start Game');
   const [hasMovedBoard, setHasMovedBoard] = useState(false);
+
+  const [lastProcessedSeq, setLastProcessedSeq] = useState(0);
+
+  useEffect(() => {
+    let updatedSeq = lastProcessedSeq;
+    for (const { seq, msg } of tttMessageQueue) {
+      if (seq > updatedSeq) {
+        if (msg.subject === "game_Update" && msg.payload.gameId === gameId) {
+          console.log('client', updatedSeq, seq, msg);
+          //setConnectedAt(msg.payload.connectedAt);
+          //setConnected(true);
+        }
+        updatedSeq = seq;
+      }
+    }
+    if (updatedSeq !== lastProcessedSeq) {
+      setLastProcessedSeq(updatedSeq);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tttMessageQueue, gameId]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
