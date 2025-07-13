@@ -1,17 +1,8 @@
 import React, { useRef, useState, useEffect, FormEvent, ChangeEvent, MouseEvent, useMemo } from 'react';
 import Dropdown, { Option } from './Dropdown';
 import { BoardBounds, boardTraverse, drawPlayer, drawWinResult } from './DrawingTTT';
-import { TypedDocumentNode, useSubscription } from '@apollo/client';
 import { useWebSocket } from "../hooks/use-websocket-context";
-
-import {
-  GameUpdateByGameIdDocument,
-  GameUpdateByGameIdSubscription,
-  GameUpdateByGameIdSubscriptionVariables,
-} from '../graphql/generated/graphql-ttt';
 import { Game, isGame, isMove, PlayerMove } from '../types';
-
-const UPDATE_GAME: TypedDocumentNode<GameUpdateByGameIdSubscription, GameUpdateByGameIdSubscriptionVariables> = GameUpdateByGameIdDocument;
 
 const CanvasComponent: React.FC = () => {
   const { tttMessageQueue } = useWebSocket();
@@ -57,7 +48,7 @@ const CanvasComponent: React.FC = () => {
   };
 
   const [boardMoveData, setBoardMoveData] = useState<PlayerMove | null>(null);
-  const boardMove = async (gameId: string, player: number, moveCell: number, isOpponentStart: boolean ) => {
+  const boardMove = async (gameId: string, player: number, moveCell: number, isOpponentStart: boolean) => {
     try {
       const response = await fetch("http://localhost:3009/api/v1/game/move", {
         method: "PUT",
@@ -115,8 +106,26 @@ const CanvasComponent: React.FC = () => {
       if (seq > updatedSeq) {
         if (msg.subject === "game_Update" && msg.payload.gameId === gameId) {
           console.log('client', updatedSeq, seq, msg);
-          //setConnectedAt(msg.payload.connectedAt);
-          //setConnected(true);
+          const newBoard = msg.payload.board.split(",");
+          setBoard(newBoard.map((cell) => parseInt(cell)));
+          setPlayMessage("Your turn.");
+          if (msg.payload.result.indexOf(':') > 0) {
+            const msgResult = msg.payload.result.split(":");
+            // A result is found when sum of result string > 0 (or equal 3)
+            if (msgResult.length === 2 && msgResult[1].indexOf(',') > 0) {
+              //console.log('sum of result ', msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0));
+              if (msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0) > 0) {
+                setPlayMessage(msgResult[0]);
+                setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
+              } else {
+                setPlayMessage(msgResult[0]);  // draw
+              }
+            }
+          }
+
+          setPlayerMove(-1);
+          setBoardUpdated(true);
+          setHasMovedBoard(false);
         }
         updatedSeq = seq;
       }
@@ -155,37 +164,37 @@ const CanvasComponent: React.FC = () => {
     }
   }, [boardMoveData]);
 
-  useSubscription(
-    UPDATE_GAME, {
-    variables: { gameId: Number(gameId) },
-    context: { service: 'ttt' },
-    skip: gameId === "EMPTY",
-    onData({ data }) {
-      if (data.data?.game_Update) {
-        //console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.result, data.data.game_Update.gameId);
-        const newBoard = data.data.game_Update?.board.split(",");
-        setBoard(newBoard.map((cell) => parseInt(cell)));
-        setPlayMessage("Your turn.");
-        if (data.data.game_Update?.result.indexOf(':') > 0) {
-          const msgResult = data.data.game_Update?.result.split(":");
-          // A result is found when sum of result string > 0 (or equal 3)
-          if (msgResult.length === 2 && msgResult[1].indexOf(',') > 0) {
-            //console.log('sum of result ', msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0));
-            if (msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0) > 0) {
-              setPlayMessage(msgResult[0]);
-              setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
-            } else {
-              setPlayMessage(msgResult[0]);  // draw
-            }
-          }
-        }
+  // useSubscription(
+  //   UPDATE_GAME, {
+  //   variables: { gameId: Number(gameId) },
+  //   context: { service: 'ttt' },
+  //   skip: gameId === "EMPTY",
+  //   onData({ data }) {
+  //     if (data.data?.game_Update) {
+  //       //console.log('subscribe got board', data.data.game_Update.board, data.data.game_Update.result, data.data.game_Update.gameId);
+  //       const newBoard = data.data.game_Update?.board.split(",");
+  //       setBoard(newBoard.map((cell) => parseInt(cell)));
+  //       setPlayMessage("Your turn.");
+  //       if (data.data.game_Update?.result.indexOf(':') > 0) {
+  //         const msgResult = data.data.game_Update?.result.split(":");
+  //         // A result is found when sum of result string > 0 (or equal 3)
+  //         if (msgResult.length === 2 && msgResult[1].indexOf(',') > 0) {
+  //           //console.log('sum of result ', msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0));
+  //           if (msgResult[1].split(",").reduce((prev, curr) => prev + parseInt(curr), 0) > 0) {
+  //             setPlayMessage(msgResult[0]);
+  //             setResult(msgResult[1].split(",").map((cell) => parseInt(cell)));
+  //           } else {
+  //             setPlayMessage(msgResult[0]);  // draw
+  //           }
+  //         }
+  //       }
 
-        setPlayerMove(-1);
-        setBoardUpdated(true);
-        setHasMovedBoard(false);
-      }
-    }
-  });
+  //       setPlayerMove(-1);
+  //       setBoardUpdated(true);
+  //       setHasMovedBoard(false);
+  //     }
+  //   }
+  // });
 
   const handleCreateGameSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
