@@ -1,7 +1,6 @@
 import React from "react";
 import Dashboard from "./dashboard/Dashboard";
 import CanvasTTT from "./CanvasTTT";
-//import CanvasGOL from "./CanvasGOL";
 
 /**
  * MainPanel is wrapper around the Dashboard items.
@@ -18,9 +17,6 @@ const MainPanel: React.FC = () => {
         <div className="px-4 pb-6">
           <CanvasTTT />
         </div>
-        {/* <div className="px-4 pb-6">
-          <CanvasGOL />
-        </div> */}
       </div>
     </section>);
 

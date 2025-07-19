@@ -37,7 +37,6 @@ const App: React.FC = () => {
           <section className="section">
             <div className="pt-0 container">
               <Header />
-              {/* <p>{!data ? "Loading..." : data}</p> */}
               <MainPanel />
             </div>
           </section >
