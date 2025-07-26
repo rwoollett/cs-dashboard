@@ -66,12 +66,12 @@ const SignIn: React.FC = () => {
             </div>)}
 
           <div className="field">
-            <label>Name</label>
+            <label>Email</label>
             <div className="control">
               <input value={name}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setName(event.target.value)}
-                className={`uk-input ${name === '' && errorMessage.length && 'uk-alert-danger'}`} type="text" placeholder="e.g Alex Smith" 
-                autoComplete="username"/>
+                className={`uk-input ${name === '' && errorMessage.length && 'uk-alert-danger'}`} type="text" placeholder="temp@hello.co.nz" 
+                autoComplete="email"/>
             </div>
           </div>
 
